@@ -557,7 +557,7 @@ def admin_logout(request):
 
 # Admin Dashboard and Management Views
 class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    template_name = 'backend/admin/dashboard.html'
+    template_name = 'admin/dashboard.html'
     login_url = 'backend:admin_login'
     
     def test_func(self):

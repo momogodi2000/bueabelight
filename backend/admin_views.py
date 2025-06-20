@@ -30,7 +30,7 @@ def is_admin(user):
 
 # Password Reset Views
 class ForgotPasswordView(PasswordResetView):
-    template_name = 'backend/admin/forgot_password.html'
+    template_name = 'backend/auth/forgot_password.html'
     form_class = ForgotPasswordForm
     success_url = reverse_lazy('backend:admin_login')
     
@@ -63,7 +63,7 @@ class ForgotPasswordView(PasswordResetView):
         return redirect(self.success_url)
 
 class ResetPasswordView(PasswordResetConfirmView):
-    template_name = 'backend/admin/reset_password.html'
+    template_name = 'backend/auth/reset_password.html'
     form_class = ResetPasswordForm
     success_url = reverse_lazy('backend:admin_login')
     
@@ -74,7 +74,7 @@ class ResetPasswordView(PasswordResetConfirmView):
 # Admin Product Management Views
 class AdminProductListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Product
-    template_name = 'backend/admin/products/list.html'
+    template_name = 'admin/products_list.html'
     context_object_name = 'products'
     paginate_by = 20
     login_url = 'backend:admin_login'
@@ -118,7 +118,7 @@ class AdminProductListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class AdminProductCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Product
-    template_name = 'backend/admin/products/form.html'
+    template_name = 'admin/form.html'
     fields = ['name', 'description', 'price', 'category', 'image', 'is_available', 'is_featured', 'stock_quantity']
     success_url = reverse_lazy('backend:admin_products')
     login_url = 'backend:admin_login'
@@ -132,7 +132,7 @@ class AdminProductCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView
 
 class AdminProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Product
-    template_name = 'backend/admin/products/form.html'
+    template_name = 'admin/form.html'
     fields = ['name', 'description', 'price', 'category', 'image', 'is_available', 'is_featured', 'stock_quantity']
     success_url = reverse_lazy('backend:admin_products')
     login_url = 'backend:admin_login'
@@ -146,7 +146,7 @@ class AdminProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView
 
 class AdminProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Product
-    template_name = 'backend/admin/products/delete.html'
+    template_name = 'admin/delete.html'
     success_url = reverse_lazy('backend:admin_products')
     login_url = 'backend:admin_login'
     
@@ -160,7 +160,7 @@ class AdminProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView
 # Admin Order Management Views
 class AdminOrderListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Order
-    template_name = 'backend/admin/orders/list.html'
+    template_name = 'admin/orders/list.html'
     context_object_name = 'orders'
     paginate_by = 20
     login_url = 'backend:admin_login'
@@ -203,7 +203,7 @@ class AdminOrderListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class AdminOrderDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Order
-    template_name = 'backend/admin/orders/detail.html'
+    template_name = 'admin/orders/detail.html'
     context_object_name = 'order'
     login_url = 'backend:admin_login'
     
@@ -242,7 +242,7 @@ def update_order_status(request, pk):
 # Admin Category Management Views
 class AdminCategoryListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Category
-    template_name = 'backend/admin/categories/list.html'
+    template_name = 'admin/categories/list.html'
     context_object_name = 'categories'
     paginate_by = 20
     login_url = 'backend:admin_login'
@@ -252,7 +252,7 @@ class AdminCategoryListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class AdminCategoryCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Category
-    template_name = 'backend/admin/categories/form.html'
+    template_name = 'admin/categories/form.html'
     fields = ['name', 'description', 'image', 'is_active']
     success_url = reverse_lazy('backend:admin_categories')
     login_url = 'backend:admin_login'
@@ -267,7 +267,7 @@ class AdminCategoryCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
 # Admin Message Management Views
 class AdminMessageListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = ContactMessage
-    template_name = 'backend/admin/messages/list.html'
+    template_name = 'admin/messages/list.html'
     context_object_name = 'messages'
     paginate_by = 20
     login_url = 'backend:admin_login'
@@ -296,7 +296,7 @@ class AdminMessageListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 # Admin Catering Management Views
 class AdminCateringListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = CateringInquiry
-    template_name = 'backend/admin/catering/list.html'
+    template_name = 'admin/catering/list.html'
     context_object_name = 'inquiries'
     paginate_by = 20
     login_url = 'backend:admin_login'
@@ -329,7 +329,7 @@ class AdminCateringListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 # Admin Analytics View
 class AdminAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    template_name = 'backend/admin/analytics.html'
+    template_name = 'admin/analytics.html'
     login_url = 'backend:admin_login'
     
     def test_func(self):
@@ -398,7 +398,7 @@ class AdminAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 # Admin Settings View
 class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = BusinessSettings
-    template_name = 'backend/admin/settings.html'
+    template_name = 'admin/settings.html'
     fields = [
         'business_name', 'business_description', 'phone', 'email', 
         'address', 'operating_hours', 'delivery_fee', 'delivery_areas',
@@ -417,3 +417,6 @@ class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Business settings updated successfully!')
         return super().form_valid(form)
+
+
+

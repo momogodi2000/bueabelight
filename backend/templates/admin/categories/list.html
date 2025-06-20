@@ -1,0 +1,674 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories Management - BueaDelights Admin</title>
+    <meta name="description" content="Manage restaurant menu categories and food types">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .admin-sidebar {
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .category-card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(1deg); }
+            66% { transform: translateY(-8px) rotate(-1deg); }
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
+                        🍽️
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">BueaDelights</h1>
+                        <p class="text-sm text-green-200">Admin Panel</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Orders</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span>Products</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span>Categories</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Messages</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Catering</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>Analytics</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="absolute bottom-6 left-6 right-6">
+                <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block">
+                    Logout
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 relative">
+            <!-- Floating Background Elements -->
+            <div class="fixed inset-0 pointer-events-none overflow-hidden">
+                <div class="floating-element absolute top-20 right-20 w-32 h-32 bg-primary/5 rounded-full"></div>
+                <div class="floating-element absolute bottom-40 left-1/3 w-24 h-24 bg-secondary/10 rounded-full"></div>
+                <div class="floating-element absolute top-1/2 right-1/4 w-16 h-16 bg-accent/5 rounded-full"></div>
+            </div>
+            
+            <!-- Header -->
+            <header class="mb-8 relative z-10" data-aos="fade-down">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-4xl font-display font-bold text-dark">Categories Management</h1>
+                        <p class="text-xl text-gray-600 mt-2">Organize your menu into categories for better navigation</p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="exportCategories()" class="btn-3d bg-secondary text-dark px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                            </svg>
+                            Export
+                        </button>
+                        <a href="{% url 'backend:admin_category_add' %}" class="btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Add Category
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 relative z-10">
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Total Categories</p>
+                            <p class="text-3xl font-bold text-dark">{{ categories.count|default:0 }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl">
+                            🏷️
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Active Categories</p>
+                            <p class="text-3xl font-bold text-dark">4</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xl">
+                            ✅
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Products in Categories</p>
+                            <p class="text-3xl font-bold text-dark">42</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl">
+                            🍽️
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Most Popular</p>
+                            <p class="text-lg font-bold text-dark">Traditional Dishes</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xl">
+                            ⭐
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categories Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+                <!-- Traditional Dishes Category -->
+                <div class="category-card rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="500">
+                    <div class="relative h-48 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🍲</div>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleCategoryStatus(1, this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Active
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-dark">Traditional Dishes</h3>
+                            <span class="text-lg font-bold text-primary">15 items</span>
+                        </div>
+                        
+                        <p class="text-gray-600 mb-4">Authentic Cameroonian dishes prepared with traditional recipes and locally sourced ingredients.</p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm text-gray-500">Created: Jan 15, 2025</span>
+                            <span class="text-sm text-gray-500">Order: 1</span>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="editCategory(1)" class="flex-1 btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Edit
+                            </button>
+                            <button onclick="viewCategoryProducts(1)" class="btn-3d bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteCategory(1, 'Traditional Dishes')" class="btn-3d bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Local Snacks Category -->
+                <div class="category-card rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="600">
+                    <div class="relative h-48 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🥧</div>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleCategoryStatus(2, this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Active
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-dark">Local Snacks</h3>
+                            <span class="text-lg font-bold text-primary">8 items</span>
+                        </div>
+                        
+                        <p class="text-gray-600 mb-4">Quick bites and local snacks perfect for any time of the day. Freshly made and delicious.</p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm text-gray-500">Created: Jan 15, 2025</span>
+                            <span class="text-sm text-gray-500">Order: 2</span>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="editCategory(2)" class="flex-1 btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Edit
+                            </button>
+                            <button onclick="viewCategoryProducts(2)" class="btn-3d bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteCategory(2, 'Local Snacks')" class="btn-3d bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Beverages Category -->
+                <div class="category-card rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="700">
+                    <div class="relative h-48 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🥤</div>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleCategoryStatus(3, this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Active
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-dark">Beverages</h3>
+                            <span class="text-lg font-bold text-primary">12 items</span>
+                        </div>
+                        
+                        <p class="text-gray-600 mb-4">Refreshing drinks, both traditional and modern, to complement your meal perfectly.</p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm text-gray-500">Created: Jan 15, 2025</span>
+                            <span class="text-sm text-gray-500">Order: 3</span>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="editCategory(3)" class="flex-1 btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Edit
+                            </button>
+                            <button onclick="viewCategoryProducts(3)" class="btn-3d bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteCategory(3, 'Beverages')" class="btn-3d bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pastries Category -->
+                <div class="category-card rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="800">
+                    <div class="relative h-48 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🧁</div>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="toggleCategoryStatus(4, this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-gray-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Inactive
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-dark">Pastries</h3>
+                            <span class="text-lg font-bold text-primary">7 items</span>
+                        </div>
+                        
+                        <p class="text-gray-600 mb-4">Sweet treats and baked goods perfect for dessert or a quick energy boost.</p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm text-gray-500">Created: Jan 20, 2025</span>
+                            <span class="text-sm text-gray-500">Order: 4</span>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="editCategory(4)" class="flex-1 btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Edit
+                            </button>
+                            <button onclick="viewCategoryProducts(4)" class="btn-3d bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteCategory(4, 'Pastries')" class="btn-3d bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add New Category Card -->
+                <div class="category-card rounded-2xl shadow-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary" data-aos="fade-up" data-aos-delay="900">
+                    <div class="h-full flex flex-col items-center justify-center p-8 text-center">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-4">Add New Category</h3>
+                        <p class="text-gray-600 mb-6">Create a new category to organize your menu items</p>
+                        <a href="{% url 'backend:admin_category_add' %}" class="btn-3d bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                            Create Category
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4" data-aos="zoom-in">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🗑️</div>
+                <h3 class="text-2xl font-bold text-dark mb-4">Delete Category</h3>
+                <p class="text-gray-600 mb-8">Are you sure you want to delete "<span id="categoryName"></span>"? This will also remove all products in this category.</p>
+                <div class="flex space-x-4">
+                    <button onclick="closeDeleteModal()" class="flex-1 btn-3d bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
+                        Cancel
+                    </button>
+                    <button onclick="confirmDelete()" class="flex-1 btn-3d bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        let categoryToDelete = null;
+
+        // Toggle category status
+        function toggleCategoryStatus(categoryId, toggle) {
+            const isActive = toggle.checked;
+            
+            fetch(`/admin-panel/categories/${categoryId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ is_active: isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the status badge
+                    const card = toggle.closest('.category-card');
+                    const badge = card.querySelector('.absolute.top-4.left-4');
+                    if (isActive) {
+                        badge.className = 'absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold';
+                        badge.textContent = 'Active';
+                    } else {
+                        badge.className = 'absolute top-4 left-4 bg-gray-500 text-white px-3 py-1 rounded-full text-sm font-bold';
+                        badge.textContent = 'Inactive';
+                    }
+                    showNotification('Category status updated successfully', 'success');
+                } else {
+                    // Revert toggle if failed
+                    toggle.checked = !isActive;
+                    showNotification('Error updating category status', 'error');
+                }
+            })
+            .catch(error => {
+                toggle.checked = !isActive;
+                showNotification('Error updating category status', 'error');
+            });
+        }
+
+        // Edit category
+        function editCategory(categoryId) {
+            window.location.href = `/admin-panel/categories/${categoryId}/edit/`;
+        }
+
+        // View category products
+        function viewCategoryProducts(categoryId) {
+            window.location.href = `/admin-panel/products/?category=${categoryId}`;
+        }
+
+        // Delete category
+        function deleteCategory(categoryId, categoryName) {
+            categoryToDelete = categoryId;
+            document.getElementById('categoryName').textContent = categoryName;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            categoryToDelete = null;
+        }
+
+        function confirmDelete() {
+            if (categoryToDelete) {
+                window.location.href = `/admin-panel/categories/${categoryToDelete}/delete/`;
+            }
+        }
+
+        // Export categories
+        function exportCategories() {
+            window.location.href = '/admin-panel/categories/export/';
+        }
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+    </script>
+    {% csrf_token %}
+</body>
+</html>

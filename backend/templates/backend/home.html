@@ -715,50 +715,54 @@
         </div>
     </section>
 
-    <!-- About Us -->
-    <section id="about" class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                <div class="relative" data-aos="fade-right">
-                    <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
-                        <div class="w-full h-96 bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white">
-                            <div class="text-center">
-                                <div class="text-8xl mb-4">👨‍🍳</div>
-                                <h3 class="text-2xl font-bold">Our Kitchen</h3>
-                                <p class="text-green-100">Where tradition meets passion</p>
-                            </div>
+  <!-- About Us -->
+<section id="about" class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="relative" data-aos="fade-right">
+                <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
+                    <div class="w-full h-96 relative">
+                        <!-- Replace this src with your local image path -->
+                        <img src="../../static/image/caro2.jpeg" 
+                             alt="Caroline Folefack Viviane - Wholesaler" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <h3 class="text-3xl font-bold mb-2">Caroline Folefack Viviane</h3>
+                            <p class="text-green-100 text-lg">Your Trusted Wholesaler</p>
                         </div>
                     </div>
-                    <div class="absolute -bottom-8 -left-8 w-64 h-64 bg-secondary/20 rounded-full z-0"></div>
-                    <div class="absolute -top-8 -right-8 w-48 h-48 bg-accent/20 rounded-full z-0"></div>
                 </div>
-                <div data-aos="fade-left">
-                    <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-6">
-                        Our <span class="text-gradient">Story</span>
-                    </h2>
-                    <p class="text-lg text-gray-600 mb-6">
-                        Founded in 2020, BueaDelights began as a small family kitchen sharing our love for authentic Cameroonian cuisine. What started as a passion project has grown into Buea's favorite food delivery service, serving over 1,500 happy customers.
-                    </p>
-                    <p class="text-lg text-gray-600 mb-8">
-                        We source ingredients locally from trusted farmers and markets, ensuring each dish carries the true flavors of Cameroon while supporting our community. Every meal is prepared with love, tradition, and the freshest ingredients.
-                    </p>
-                    <div class="grid grid-cols-2 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-md">
-                            <div class="text-3xl text-primary font-bold mb-2">100%</div>
-                            <div class="text-gray-600">Authentic Recipes</div>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-md">
-                            <div class="text-3xl text-primary font-bold mb-2">50+</div>
-                            <div class="text-gray-600">Local Suppliers</div>
-                        </div>
+                <div class="absolute -bottom-8 -left-8 w-64 h-64 bg-secondary/20 rounded-full z-0"></div>
+                <div class="absolute -top-8 -right-8 w-48 h-48 bg-accent/20 rounded-full z-0"></div>
+            </div>
+            <div data-aos="fade-left">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-6">
+                    Meet <span class="text-gradient">Caroline</span>
+                </h2>
+                <p class="text-lg text-gray-600 mb-6">
+                    Caroline Folefack Viviane has been serving the Buea community as a trusted wholesaler since 2020. With her extensive network and commitment to quality, she ensures that only the finest ingredients reach our kitchen and yours.
+                </p>
+                <p class="text-lg text-gray-600 mb-8">
+                    Her dedication to sourcing authentic Cameroonian ingredients from local farmers and trusted suppliers has made her an integral part of our success. Every product she provides carries the guarantee of freshness, authenticity, and community support.
+                </p>
+                <div class="grid grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="text-3xl text-primary font-bold mb-2">100%</div>
+                        <div class="text-gray-600">Quality Assured</div>
                     </div>
-                    <button onclick="window.location.href='{% url 'backend:about' %}'" class="btn-3d bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-green-700 transition-all">
-                        Learn More About Us →
-                    </button>
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="text-3xl text-primary font-bold mb-2">50+</div>
+                        <div class="text-gray-600">Local Suppliers</div>
+                    </div>
                 </div>
+                <button onclick="window.location.href='{% url 'backend:about' %}'" class="btn-3d bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-green-700 transition-all">
+                    Learn More About Caroline →
+                </button>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Contact Section -->
     <section id="contact" class="py-20 bg-white">

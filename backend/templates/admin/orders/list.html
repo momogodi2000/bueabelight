@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management - BueaDelights Admin</title>
+    <meta name="description" content="Manage restaurant orders and customer requests">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .admin-sidebar {
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .order-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .order-card.pending {
+            border-left-color: #f59e0b;
+        }
+        
+        .order-card.confirmed {
+            border-left-color: #3b82f6;
+        }
+        
+        .order-card.preparing {
+            border-left-color: #f97316;
+        }
+        
+        .order-card.ready {
+            border-left-color: #8b5cf6;
+        }
+        
+        .order-card.delivered {
+            border-left-color: #10b981;
+        }
+        
+        .order-card.cancelled {
+            border-left-color: #ef4444;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-confirmed {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .status-preparing {
+            background-color: #fed7aa;
+            color: #ea580c;
+        }
+        
+        .status-ready {
+            background-color: #e9d5ff;
+            color: #7c3aed;
+        }
+        
+        .status-delivered {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+        
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .filter-badge {
+            transition: all 0.3s ease;
+        }
+        
+        .filter-badge.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(1deg); }
+            66% { transform: translateY(-8px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
+                        🍽️
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">BueaDelights</h1>
+                        <p class="text-sm text-green-200">Admin Panel</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Orders</span>
+                        {% if pending_orders > 0 %}
+                        <span class="notification-badge bg-accent text-white text-xs px-2 py-1 rounded-full">{{ pending_orders }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span>Products</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span>Categories</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Messages</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Catering</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>Analytics</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="absolute bottom-6 left-6 right-6">
+                <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block">
+                    Logout
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 relative">
+            <!-- Floating Background Elements -->
+            <div class="fixed inset-0 pointer-events-none overflow-hidden">
+                <div class="floating-element absolute top-20 right-20 w-32 h-32 bg-primary/5 rounded-full"></div>
+                <div class="floating-element absolute bottom-40 left-1/3 w-24 h-24 bg-secondary/10 rounded-full"></div>
+                <div class="floating-element absolute top-1/2 right-1/4 w-16 h-16 bg-accent/5 rounded-full"></div>
+            </div>
+            
+            <!-- Header -->
+            <header class="mb-8 relative z-10" data-aos="fade-down">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-4xl font-display font-bold text-dark">Orders Management</h1>
+                        <p class="text-xl text-gray-600 mt-2">Track and manage customer orders</p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="exportOrders()" class="btn-3d bg-secondary text-dark px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                            </svg>
+                            Export
+                        </button>
+                        <button onclick="refreshOrders()" class="btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8 relative z-10">
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Total Orders</p>
+                            <p class="text-3xl font-bold text-dark">{{ total_orders|default:0 }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl">
+                            📋
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Pending</p>
+                            <p class="text-3xl font-bold text-yellow-600">{{ pending_orders|default:0 }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-white text-xl">
+                            ⏳
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Preparing</p>
+                            <p class="text-3xl font-bold text-orange-600">8</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-xl">
+                            👨‍🍳
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Completed</p>
+                            <p class="text-3xl font-bold text-green-600">{{ completed_orders|default:0 }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xl">
+                            ✅
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Today's Revenue</p>
+                            <p class="text-2xl font-bold text-primary">45,000 FCFA</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl">
+                            💰
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters and Search -->
+            <div class="bg-white rounded-2xl p-6 shadow-lg mb-8 relative z-10" data-aos="fade-up" data-aos-delay="600">
+                <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+                    <div class="flex flex-wrap gap-2">
+                        <button class="filter-badge active px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="all">
+                            All Orders
+                        </button>
+                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="pending">
+                            Pending
+                        </button>
+                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="confirmed">
+                            Confirmed
+                        </button>
+                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="preparing">
+                            Preparing
+                        </button>
+                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="ready">
+                            Ready
+                        </button>
+                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="delivered">
+                            Delivered
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <div class="relative">
+                            <input type="text" id="search-orders" placeholder="Search orders..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Payment Status</option>
+                            <option value="pending">Payment Pending</option>
+                            <option value="completed">Payment Completed</option>
+                            <option value="failed">Payment Failed</option>
+                        </select>
+                        
+                        <input type="date" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders List -->
+            <div class="space-y-4 relative z-10" id="orders-list">
+                {% for order in orders %}
+                <div class="order-card {{ order.order_status }} bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+                        <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Order Info -->
+                            <div>
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+                                        {{ order.customer_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-dark">{{ order.customer_name }}</h3>
+                                        <p class="text-sm text-gray-500">#{{ order.order_id }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-sm space-y-1">
+                                    <p class="text-gray-600">📞 {{ order.customer_phone }}</p>
+                                    <p class="text-gray-600">📍 {{ order.customer_location|truncatechars:30 }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Order Details -->
+                            <div>
+                                <h4 class="font-semibold text-dark mb-2">Order Items</h4>
+                                <div class="space-y-1">
+                                    {% for item in order.orderitem_set.all|slice:":2" %}
+                                    <p class="text-sm text-gray-600">{{ item.quantity }}x {{ item.product.name }}</p>
+                                    {% endfor %}
+                                    {% if order.orderitem_set.count > 2 %}
+                                    <p class="text-sm text-gray-500">+{{ order.orderitem_set.count|add:"-2" }} more items</p>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-lg font-bold text-primary">{{ order.total_amount|add:order.delivery_fee|floatformat:0 }} FCFA</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Time & Status -->
+                            <div>
+                                <div class="mb-2">
+                                    <span class="status-badge status-{{ order.order_status }}">
+                                        {{ order.get_order_status_display }}
+                                    </span>
+                                </div>
+                                <div class="text-sm space-y-1">
+                                    <p class="text-gray-600">🕒 {{ order.created_at|timesince }} ago</p>
+                                    <p class="text-gray-600">💳 {{ order.get_payment_method_display }}</p>
+                                    <p class="text-gray-600 {% if order.payment_status == 'completed' %}text-green-600{% elif order.payment_status == 'failed' %}text-red-600{% else %}text-yellow-600{% endif %}">
+                                        {{ order.get_payment_status_display }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex flex-col space-y-2">
+                            <a href="{% url 'backend:admin_order_detail' order.pk %}" class="btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-center">
+                                View Details
+                            </a>
+                            
+                            {% if order.order_status == 'pending' %}
+                            <button onclick="updateOrderStatus({{ order.pk }}, 'confirmed')" class="btn-3d bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                Confirm Order
+                            </button>
+                            {% elif order.order_status == 'confirmed' %}
+                            <button onclick="updateOrderStatus({{ order.pk }}, 'preparing')" class="btn-3d bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all">
+                                Start Preparing
+                            </button>
+                            {% elif order.order_status == 'preparing' %}
+                            <button onclick="updateOrderStatus({{ order.pk }}, 'ready')" class="btn-3d bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-600 transition-all">
+                                Mark Ready
+                            </button>
+                            {% elif order.order_status == 'ready' %}
+                            <button onclick="updateOrderStatus({{ order.pk }}, 'delivered')" class="btn-3d bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all">
+                                Mark Delivered
+                            </button>
+                            {% endif %}
+                            
+                            <div class="flex space-x-2">
+                                <button onclick="callCustomer('{{ order.customer_phone }}')" class="btn-3d bg-secondary text-dark px-3 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="messageCustomer('{{ order.customer_phone }}')" class="btn-3d bg-green-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-20">
+                    <div class="text-8xl mb-6">📋</div>
+                    <h3 class="text-3xl font-bold text-dark mb-4">No orders found</h3>
+                    <p class="text-xl text-gray-600 mb-8">Orders will appear here when customers place them</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="flex justify-center mt-12 relative z-10" data-aos="fade-up">
+                <div class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="bg-primary text-white px-4 py-2 rounded-lg font-semibold">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">
+                        Next
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Filter functionality
+        const filterBadges = document.querySelectorAll('.filter-badge');
+        filterBadges.forEach(badge => {
+            badge.addEventListener('click', () => {
+                filterBadges.forEach(b => b.classList.remove('active'));
+                badge.classList.add('active');
+                
+                const filter = badge.dataset.filter;
+                filterOrders(filter);
+            });
+        });
+
+        function filterOrders(filter) {
+            const orders = document.querySelectorAll('.order-card');
+            orders.forEach(order => {
+                if (filter === 'all') {
+                    order.style.display = 'block';
+                } else if (order.classList.contains(filter)) {
+                    order.style.display = 'block';
+                } else {
+                    order.style.display = 'none';
+                }
+            });
+        }
+
+        // Search functionality
+        document.getElementById('search-orders').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const orders = document.querySelectorAll('.order-card');
+            
+            orders.forEach(order => {
+                const orderText = order.textContent.toLowerCase();
+                if (orderText.includes(searchTerm)) {
+                    order.style.display = 'block';
+                } else {
+                    order.style.display = 'none';
+                }
+            });
+        });
+
+        // Update order status
+        function updateOrderStatus(orderId, newStatus) {
+            if (confirm(`Are you sure you want to update this order status to ${newStatus}?`)) {
+                fetch(`{% url 'backend:update_order_status' 0 %}`.replace('0', orderId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `status=${newStatus}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating order status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error updating order status');
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        // Contact customer functions
+        function callCustomer(phone) {
+            window.open(`tel:${phone}`, '_self');
+        }
+
+        function messageCustomer(phone) {
+            const message = "Hello! This is BueaDelights. We're contacting you regarding your recent order.";
+            window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // Export orders
+        function exportOrders() {
+            window.location.href = '/admin-panel/orders/export/';
+        }
+
+        // Refresh orders
+        function refreshOrders() {
+            location.reload();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            // Check for new orders without full page reload
+            fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Update order count badges if needed
+                // This is a simplified implementation
+                console.log('Checking for updates...');
+            })
+            .catch(error => console.log('Auto-refresh error:', error));
+        }, 30000);
+
+        // Real-time notifications (would integrate with WebSocket in production)
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
+    {% csrf_token %}
+</body>
+</html>
