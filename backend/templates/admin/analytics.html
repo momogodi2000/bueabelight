@@ -1,0 +1,557 @@
+<!-- backend/templates/admin/analytics.html -->
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Analytics & Reports - BueaDelights Admin{% endblock %}
+
+{% block page_title %}Analytics & Reports{% endblock %}
+
+{% block breadcrumb %}
+<nav class="text-sm mb-6">
+    <ol class="flex items-center space-x-2 text-gray-600">
+        <li><a href="{% url 'backend:admin_dashboard' %}" class="hover:text-forest-green">Admin</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-forest-green font-medium">Analytics</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 400px;
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .trend-up {
+        color: #10B981;
+    }
+    
+    .trend-down {
+        color: #EF4444;
+    }
+    
+    .trend-neutral {
+        color: #6B7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Date Range Selector -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+            <h2 class="text-2xl font-bold text-gray-800">Business Analytics</h2>
+            <p class="text-gray-600">Insights and performance metrics for your business</p>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <!-- Date Range Selector -->
+            <form method="GET" class="flex items-center space-x-3">
+                <label class="text-sm font-medium text-gray-700">Date Range:</label>
+                <select name="range" onchange="this.form.submit()" class="input-field w-32">
+                    <option value="7" {% if date_range == '7' %}selected{% endif %}>Last 7 days</option>
+                    <option value="30" {% if date_range == '30' %}selected{% endif %}>Last 30 days</option>
+                    <option value="90" {% if date_range == '90' %}selected{% endif %}>Last 90 days</option>
+                </select>
+            </form>
+            
+            <!-- Export Button -->
+            <button id="export-report" class="btn btn-outline">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Revenue -->
+    <div class="metric-card bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-2">Total Revenue</p>
+                <p class="metric-value text-gray-900">{{ total_revenue|floatformat:0 }}</p>
+                <p class="text-xs text-gray-500">FCFA</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <span class="text-sm text-green-600 font-medium">Period: {{ start_date|date:"M d" }} - {{ end_date|date:"M d" }}</span>
+        </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="metric-card bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-2">Total Orders</p>
+                <p class="metric-value text-gray-900">{{ total_orders }}</p>
+                <p class="text-xs text-gray-500">orders</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <span class="text-sm text-blue-600 font-medium">{{ date_range }} day period</span>
+        </div>
+    </div>
+
+    <!-- Average Order Value -->
+    <div class="metric-card bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-2">Avg Order Value</p>
+                <p class="metric-value text-gray-900">{{ avg_order_value|floatformat:0 }}</p>
+                <p class="text-xs text-gray-500">FCFA</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <span class="text-sm text-purple-600 font-medium">Per order average</span>
+        </div>
+    </div>
+
+    <!-- Performance Score -->
+    <div class="metric-card bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-2">Performance</p>
+                <p class="metric-value text-gray-900">
+                    {% if total_orders > 0 %}
+                        {% widthratio total_revenue 1000 1 %}
+                    {% else %}
+                        0
+                    {% endif %}
+                </p>
+                <p class="text-xs text-gray-500">score</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <span class="text-sm text-orange-600 font-medium">Business health</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Revenue Trend Chart -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-800">Revenue Trend</h3>
+            <div class="text-sm text-gray-500">Last {{ date_range }} days</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Orders Trend Chart -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-800">Orders Trend</h3>
+            <div class="text-sm text-gray-500">Daily orders</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Top Products -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Top Selling Products</h3>
+            <p class="text-sm text-gray-600">Best performers in the selected period</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for product in product_performance %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ product.product__name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                            {{ product.total_sold }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                            {{ product.total_revenue|floatformat:0 }} FCFA
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-500">No sales data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top Customers -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Top Customers</h3>
+            <p class="text-sm text-gray-600">Highest spending customers</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for customer in customer_insights %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ customer.customer_phone }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                            {{ customer.order_count }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                            {{ customer.total_spent|floatformat:0 }} FCFA
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-500">No customer data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Category Performance -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Category Performance</h3>
+        <p class="text-sm text-gray-600">Revenue breakdown by product categories</p>
+    </div>
+    
+    {% if category_performance %}
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for category in category_performance %}
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-800">{{ category.product__category__name }}</h4>
+                    <span class="text-sm text-gray-500">{{ category.total_sold }} sold</span>
+                </div>
+                <div class="text-2xl font-bold text-forest-green">
+                    {{ category.total_revenue|floatformat:0 }} FCFA
+                </div>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                    <div class="bg-forest-green h-2 rounded-full" 
+                         style="width: {% widthratio category.total_revenue total_revenue 100 %}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-gray-500">
+        No category data available for the selected period
+    </div>
+    {% endif %}
+</div>
+
+<!-- Key Insights -->
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Key Insights</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">Revenue Performance</h4>
+                    <p class="text-sm text-gray-600">
+                        Your total revenue for the last {{ date_range }} days is {{ total_revenue|floatformat:0 }} FCFA
+                        {% if avg_order_value > 3000 %}
+                        with a healthy average order value.
+                        {% else %}
+                        with room for improvement in average order value.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">Order Trends</h4>
+                    <p class="text-sm text-gray-600">
+                        You've received {{ total_orders }} orders in the selected period.
+                        {% if total_orders > 50 %}
+                        Great job maintaining consistent order flow!
+                        {% else %}
+                        Consider promotional campaigns to boost order volume.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">Customer Base</h4>
+                    <p class="text-sm text-gray-600">
+                        {% if customer_insights %}
+                        Your top customers are contributing significantly to revenue. 
+                        Focus on retention strategies to maintain their loyalty.
+                        {% else %}
+                        Start building customer relationships to create repeat business.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">Product Performance</h4>
+                    <p class="text-sm text-gray-600">
+                        {% if product_performance %}
+                        Identify your top-performing products and ensure adequate stock levels.
+                        Consider promoting similar items to boost overall sales.
+                        {% else %}
+                        Monitor product performance to optimize your menu offerings.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart configurations
+Chart.defaults.font.family = 'Inter, sans-serif';
+Chart.defaults.color = '#6B7280';
+
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueData = {{ revenue_data|safe }};
+
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: revenueData.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: 'Revenue (FCFA)',
+            data: revenueData.map(item => item.revenue),
+            borderColor: '#228B22',
+            backgroundColor: 'rgba(34, 139, 34, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#228B22',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#228B22',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: ' + context.parsed.y.toLocaleString() + ' FCFA';
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return value.toLocaleString() + ' FCFA';
+                    }
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    }
+});
+
+// Orders Chart
+const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+const ordersData = {{ orders_data|safe }};
+
+new Chart(ordersCtx, {
+    type: 'bar',
+    data: {
+        labels: ordersData.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: 'Orders',
+            data: ordersData.map(item => item.orders),
+            backgroundColor: 'rgba(34, 139, 34, 0.8)',
+            borderColor: '#228B22',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#228B22',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        return 'Orders: ' + context.parsed.y;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Export report functionality
+document.getElementById('export-report').addEventListener('click', function() {
+    // Create a simple CSV export
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Revenue,Orders\n";
+    
+    revenueData.forEach((item, index) => {
+        const ordersItem = ordersData[index];
+        csvContent += `${item.date},${item.revenue},${ordersItem.orders}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `bueadelights_analytics_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+</script>
+{% endblock %}

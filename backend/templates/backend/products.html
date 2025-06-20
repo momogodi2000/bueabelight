@@ -1,0 +1,393 @@
+<!-- backend/templates/backend/products.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_tags %}
+
+{% block title %}Our Menu - BueaDelights{% endblock %}
+
+{% block meta_description %}
+Discover our delicious menu of authentic Cameroonian dishes. Fresh, traditional cuisine delivered to your doorstep in Buea.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .product-card {
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .price-badge {
+        background: linear-gradient(135deg, #228B22, #32CD32);
+    }
+    
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="bg-gradient-to-r from-forest-green to-green-600 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-playfair font-bold mb-4">
+                Our Delicious Menu
+            </h1>
+            <p class="text-xl text-green-100 max-w-2xl mx-auto">
+                Discover authentic Cameroonian flavors crafted with love and traditional recipes. 
+                Each dish tells a story of our rich culinary heritage.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Search and Filters -->
+<section class="py-8 bg-white shadow-sm sticky top-16 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form method="GET" class="flex flex-col lg:flex-row gap-4 items-center">
+            <!-- Search Bar -->
+            <div class="flex-1 w-full lg:max-w-md">
+                <div class="relative">
+                    <input type="text" 
+                           name="q" 
+                           value="{{ current_query }}"
+                           placeholder="Search dishes..." 
+                           class="search-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Category Filter -->
+            <div class="w-full lg:w-auto">
+                <select name="category" class="w-full lg:w-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if current_category == category.slug %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Price Filter -->
+            <div class="w-full lg:w-auto">
+                <select name="price_range" class="w-full lg:w-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
+                    <option value="">All Prices</option>
+                    <option value="low" {% if current_price_range == 'low' %}selected{% endif %}>Under 2,000 FCFA</option>
+                    <option value="medium" {% if current_price_range == 'medium' %}selected{% endif %}>2,000 - 5,000 FCFA</option>
+                    <option value="high" {% if current_price_range == 'high' %}selected{% endif %}>Above 5,000 FCFA</option>
+                </select>
+            </div>
+            
+            <!-- Filter Button -->
+            <button type="submit" class="btn btn-primary w-full lg:w-auto px-6 py-3">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/>
+                </svg>
+                Filter
+            </button>
+        </form>
+        
+        <!-- Active Filters Display -->
+        {% if current_query or current_category or current_price_range %}
+        <div class="mt-4 flex flex-wrap gap-2">
+            <span class="text-sm text-gray-600">Active filters:</span>
+            {% if current_query %}
+            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
+                Search: "{{ current_query }}"
+                <a href="{% url 'backend:products' %}?category={{ current_category }}&price_range={{ current_price_range }}" 
+                   class="ml-2 text-white hover:text-gray-200">×</a>
+            </span>
+            {% endif %}
+            {% if current_category %}
+            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
+                Category: {{ categories|first.name }}
+                <a href="{% url 'backend:products' %}?q={{ current_query }}&price_range={{ current_price_range }}" 
+                   class="ml-2 text-white hover:text-gray-200">×</a>
+            </span>
+            {% endif %}
+            {% if current_price_range %}
+            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
+                Price: {{ current_price_range|title }}
+                <a href="{% url 'backend:products' %}?q={{ current_query }}&category={{ current_category }}" 
+                   class="ml-2 text-white hover:text-gray-200">×</a>
+            </span>
+            {% endif %}
+            <a href="{% url 'backend:products' %}" class="text-warm-red hover:text-red-700 text-sm font-medium">
+                Clear all filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Products Grid -->
+<section class="py-12 bg-neutral-gray">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Results Info -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">
+                    {% if current_query %}
+                        Search Results for "{{ current_query }}"
+                    {% elif current_category %}
+                        {{ categories|first.name }} Dishes
+                    {% else %}
+                        All Dishes
+                    {% endif %}
+                </h2>
+                <p class="text-gray-600 mt-1">
+                    {% if products %}
+                        Showing {{ products|length }} of {{ paginator.count }} dish{{ paginator.count|pluralize:"es" }}
+                    {% else %}
+                        No dishes found
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Sort Options -->
+            <div class="hidden sm:block">
+                <select onchange="location.href='?q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}&sort=' + this.value" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
+                    <option value="">Sort by</option>
+                    <option value="name">Name A-Z</option>
+                    <option value="-name">Name Z-A</option>
+                    <option value="price">Price Low-High</option>
+                    <option value="-price">Price High-Low</option>
+                    <option value="-created_at">Newest First</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Products Grid -->
+        {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in products %}
+            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                <!-- Product Image -->
+                <div class="aspect-w-16 aspect-h-12 overflow-hidden">
+                    <img src="{{ product.image.url|default:'/static/backend/images/product-default.jpg' }}" 
+                         alt="{{ product.name }}"
+                         class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                         loading="lazy">
+                    
+                    <!-- Featured Badge -->
+                    {% if product.is_featured %}
+                    <div class="absolute top-3 left-3">
+                        <span class="bg-golden-yellow text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                            ⭐ Featured
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Stock Status -->
+                    {% if not product.is_available %}
+                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold">
+                            Out of Stock
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Product Info -->
+                <div class="p-4">
+                    <!-- Category -->
+                    <div class="text-forest-green text-sm font-medium mb-1">
+                        {{ product.category.name }}
+                    </div>
+                    
+                    <!-- Product Name -->
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                        {{ product.name }}
+                    </h3>
+                    
+                    <!-- Description -->
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                        {{ product.description|truncatewords:20 }}
+                    </p>
+                    
+                    <!-- Price and Action -->
+                    <div class="flex justify-between items-center">
+                        <div class="price-badge text-white px-3 py-1 rounded-lg">
+                            <span class="text-lg font-bold">{{ product.price|floatformat:0 }}</span>
+                            <span class="text-sm">FCFA</span>
+                        </div>
+                        
+                        {% if product.is_available %}
+                        <div class="flex space-x-2">
+                            <!-- View Details -->
+                            <a href="{{ product.get_absolute_url }}" 
+                               class="text-forest-green hover:text-green-700 p-2 rounded-lg border border-forest-green hover:bg-forest-green hover:text-white transition-colors"
+                               title="View Details">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                            
+                            <!-- Add to Cart -->
+                            <button class="btn btn-primary add-to-cart px-3 py-2" 
+                                    data-product-id="{{ product.id }}"
+                                    data-product-name="{{ product.name }}"
+                                    data-product-price="{{ product.price }}"
+                                    title="Add to Cart">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0v-2a2 2 0 012-2h5a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {% else %}
+                        <span class="text-gray-500 text-sm font-medium">
+                            Unavailable
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="mt-12 flex justify-center">
+            <nav class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
+                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="px-3 py-2 rounded-lg bg-forest-green text-white">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
+                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
+                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- No Products Found -->
+        <div class="text-center py-16">
+            <div class="text-6xl mb-4">🍽️</div>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">No dishes found</h3>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                {% if current_query or current_category or current_price_range %}
+                    Sorry, we couldn't find any dishes matching your criteria. 
+                    Try adjusting your filters or search terms.
+                {% else %}
+                    We're currently updating our menu. Please check back soon!
+                {% endif %}
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if current_query or current_category or current_price_range %}
+                <a href="{% url 'backend:products' %}" 
+                   class="btn btn-primary">
+                    View All Dishes
+                </a>
+                {% endif %}
+                <a href="{% url 'backend:contact' %}" 
+                   class="btn btn-outline">
+                    Contact Us
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Quick Categories -->
+{% if categories %}
+<section class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">
+            Browse by Category
+        </h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {% for category in categories %}
+            <a href="{% url 'backend:category_products' category.slug %}" 
+               class="group text-center p-4 rounded-lg border border-gray-200 hover:border-forest-green hover:shadow-md transition-all duration-300">
+                <div class="w-12 h-12 mx-auto mb-2 bg-forest-green text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span class="text-xl">🍽️</span>
+                </div>
+                <h3 class="text-sm font-medium text-gray-800 group-hover:text-forest-green">
+                    {{ category.name }}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ category.products.count }} item{{ category.products.count|pluralize:"s" }}
+                </p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Real-time search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    // Auto-submit form after 500ms of no typing
+                    this.form.submit();
+                }, 500);
+            }
+        });
+    }
+    
+    // Add loading state to add-to-cart buttons
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<div class="loader"></div>';
+            this.disabled = true;
+            
+            // Re-enable button after 2 seconds
+            setTimeout(() => {
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

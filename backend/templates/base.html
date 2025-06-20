@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}BueaDelights - Local Flavors at Your Fingertips. Authentic Cameroonian cuisine delivery in Buea.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Buea food delivery, Cameroonian cuisine, local food, traditional dishes{% endblock %}">
+    
+    <title>{% block title %}BueaDelights - Local Flavors at Your Fingertips{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    {% load static %}
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'backend/images/favicon.png' %}">
+    
+    <!-- Additional CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Meta tags for social sharing -->
+    <meta property="og:title" content="{% block og_title %}BueaDelights - Local Flavors at Your Fingertips{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Authentic Cameroonian cuisine delivered to your doorstep in Buea{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'backend/images/og-image.jpg' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="font-inter bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    
+    <!-- Main Content -->
+    <main class="{% block main_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    
+    <!-- WhatsApp Float Button -->
+    
+    <!-- Notifications -->
+    <div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- JavaScript -->
+    <script src="{% static 'backend/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Hot Reload for Development -->
+    {% if debug %}
+    <script>
+        // Simple auto-reload for development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            let lastModified = document.lastModified;
+            setInterval(() => {
+                fetch(window.location.href, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.headers.get('last-modified') !== lastModified) {
+                            window.location.reload();
+                        }
+                    })
+                    .catch(() => {}); // Ignore errors
+            }, 1000);
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

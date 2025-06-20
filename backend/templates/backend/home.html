@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BueaDelights - Authentic Cameroonian Cuisine Delivered</title>
+    <meta name="description" content="Experience authentic Cameroonian flavors delivered fresh to your doorstep in Buea. Traditional dishes, catering services, and local delicacies.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-20px) rotateX(5deg) rotateY(5deg) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-element:nth-child(2) {
+            animation-delay: -2s;
+        }
+        
+        .floating-element:nth-child(3) {
+            animation-delay: -4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideRight {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes rotateY {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3); }
+        }
+        
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200px 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        .text-gradient {
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn-3d:active {
+            transform: translateY(-1px);
+        }
+        
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .feature-icon {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .stats-counter {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .menu-item:hover .menu-price {
+            transform: scale(1.1);
+            color: var(--secondary);
+        }
+        
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .hero-gradient {
+                background-attachment: scroll;
+            }
+            
+            .card-3d:hover {
+                transform: translateY(-10px) scale(1.02);
+            }
+            
+            .parallax-bg {
+                background-attachment: scroll;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .glass-effect {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .text-gradient {
+                -webkit-text-fill-color: initial;
+                color: #FFD700;
+            }
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        B
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="#menu" class="text-white hover:text-secondary transition-colors">Menu</a>
+                    <a href="#services" class="text-white hover:text-secondary transition-colors">Services</a>
+                    <a href="#about" class="text-white hover:text-secondary transition-colors">About</a>
+                    <a href="#contact" class="text-white hover:text-secondary transition-colors">Contact</a>
+                    <button class="bg-secondary text-dark px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition-all btn-3d">
+                        Order Now
+                    </button>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden glass-effect" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#home" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="#menu" class="block px-3 py-2 text-white hover:text-secondary">Menu</a>
+                <a href="#services" class="block px-3 py-2 text-white hover:text-secondary">Services</a>
+                <a href="#about" class="block px-3 py-2 text-white hover:text-secondary">About</a>
+                <a href="#contact" class="block px-3 py-2 text-white hover:text-secondary">Contact</a>
+                <button class="w-full mt-4 bg-secondary text-dark px-6 py-2 rounded-full font-semibold">
+                    Order Now
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-gradient min-h-screen flex items-center justify-center text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-40 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 right-10 w-24 h-24 bg-primary opacity-10 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div data-aos="fade-up" data-aos-duration="1000">
+                <h1 class="text-4xl md:text-7xl font-display font-bold mb-6 leading-tight">
+                    Authentic <span class="text-gradient">Cameroonian</span><br>
+                    Flavors Delivered
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100 leading-relaxed">
+                    Experience the rich taste of traditional dishes made with love and authentic ingredients. 
+                    From our kitchen to your doorstep in Buea - fresh, fast, and full of flavor.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+                    <button class="btn-3d bg-secondary text-dark text-lg px-10 py-4 rounded-full font-bold hover:bg-yellow-400 transition-all transform hover:scale-105">
+                        🍽️ Order Now
+                    </button>
+                    <button class="btn-3d border-2 border-white text-white text-lg px-10 py-4 rounded-full font-bold hover:bg-white hover:text-primary transition-all">
+                        🎉 Catering Services
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Hero Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mt-16" data-aos="fade-up" data-aos-delay="200">
+                <div class="glass-effect rounded-2xl p-6 card-3d">
+                    <div class="text-4xl font-bold text-secondary mb-2 stats-counter" data-target="1500">0</div>
+                    <div class="text-lg text-gray-200">Happy Customers</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 card-3d">
+                    <div class="text-4xl font-bold text-secondary mb-2 stats-counter" data-target="85">0</div>
+                    <div class="text-lg text-gray-200">Delicious Dishes</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 card-3d">
+                    <div class="text-4xl font-bold text-secondary mb-2">25<span class="text-2xl">min</span></div>
+                    <div class="text-lg text-gray-200">Average Delivery</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 card-3d">
+                    <div class="text-4xl font-bold text-secondary mb-2 stats-counter" data-target="98">0</div>
+                    <div class="text-lg text-gray-200">Satisfaction Rate</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                <div class="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Menu Categories -->
+    <section id="menu" class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Our Signature <span class="text-gradient">Categories</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Discover our wide range of authentic Cameroonian dishes, from traditional favorites 
+                    to modern interpretations crafted with passion and authenticity.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Traditional Dishes -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary to-green-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-6xl animate-pulse-slow">🍲</div>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-secondary text-dark px-3 py-1 rounded-full text-sm font-bold">
+                            Popular
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-dark mb-3">Traditional Dishes</h3>
+                        <p class="text-gray-600 mb-4">Authentic recipes passed down through generations - Ndolé, Achu, Eru, and more.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-primary font-bold text-lg">25+ dishes</span>
+                            <button class="text-accent hover:text-red-700 font-semibold transition-colors">
+                                Explore →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Beverages -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-accent to-red-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-6xl animate-bounce-slow">🥤</div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-dark mb-3">Fresh Beverages</h3>
+                        <p class="text-gray-600 mb-4">Natural fruit juices, traditional drinks, and refreshing smoothies made daily.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-primary font-bold text-lg">15+ drinks</span>
+                            <button class="text-accent hover:text-red-700 font-semibold transition-colors">
+                                Explore →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Snacks & Pastries -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-secondary to-yellow-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-6xl animate-rotate-slow">🥧</div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-dark mb-3">Snacks & Pastries</h3>
+                        <p class="text-gray-600 mb-4">Freshly baked goods, local snacks, and sweet treats perfect for any time.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-primary font-bold text-lg">20+ items</span>
+                            <button class="text-accent hover:text-red-700 font-semibold transition-colors">
+                                Explore →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catering Services -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="400">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-700"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-6xl animate-pulse-slow">🎉</div>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-secondary text-dark px-3 py-1 rounded-full text-sm font-bold">
+                            Premium
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-dark mb-3">Catering Services</h3>
+                        <p class="text-gray-600 mb-4">Professional catering for weddings, corporate events, and special celebrations.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-primary font-bold text-lg">All Events</span>
+                            <button class="text-accent hover:text-red-700 font-semibold transition-colors">
+                                Book Now →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Today's <span class="text-gradient">Featured Dishes</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Handpicked favorites that showcase the best of Cameroonian cuisine. 
+                    Each dish tells a story of tradition, flavor, and cultural heritage.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Featured Product 1 -->
+                <div class="menu-item card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 opacity-90"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🍲</div>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-accent text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Chef's Special
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-2">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-dark">Ndolé Special</h3>
+                            <div class="menu-price text-2xl font-bold text-primary transition-all">4,500 FCFA</div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Traditional peanut and leaf stew with fish, beef, and prawns. Served with plantains or rice.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-1">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                                <span class="text-sm text-gray-500">(127 reviews)</span>
+                            </div>
+                            <button class="btn-3d bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Featured Product 2 -->
+                <div class="menu-item card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 opacity-90"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-8xl">🍖</div>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-secondary text-dark px-3 py-1 rounded-full text-sm font-bold">
+                            Best Seller
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-dark">Achu & Yellow Soup</h3>
+                            <div class="menu-price text-2xl font-bold text-primary transition-all">3,800 FCFA</div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Pounded cocoyam with aromatic yellow soup, served with assorted meat and fish.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-1">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                                <span class="text-sm text-gray-500">(95 reviews)</span>
+                            </div>
+                            <button class="btn-3d bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Featured Product 3 -->
+                <div class="menu-item card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="relative h-64 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-red-400 to-red-600 opacity-90"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                                                       <div class="text-8xl">🥤</div>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Refreshing
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-dark">Fruit Juice Medley</h3>
+                            <div class="menu-price text-2xl font-bold text-primary transition-all">2,500 FCFA</div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Fresh blend of tropical fruits - mango, pineapple, passion fruit, and ginger. Perfectly chilled.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-1">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                                <span class="text-sm text-gray-500">(68 reviews)</span>
+                            </div>
+                            <button class="btn-3d bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-16" data-aos="fade-up">
+                <button class="btn-3d bg-accent text-white px-10 py-4 rounded-full font-bold hover:bg-red-700 transition-all transform hover:scale-105">
+                    View Full Menu (85+ Dishes) →
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="services" class="py-20 bg-gradient-to-br from-gray-100 to-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Simple <span class="text-gradient">Order Process</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Getting your favorite Cameroonian dishes has never been easier. 
+                    Just a few taps and your meal is on its way!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl mb-6">
+                        1
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-3">Browse & Select</h3>
+                    <p class="text-gray-600">
+                        Explore our diverse menu of authentic dishes. Choose your favorites and customize if needed.
+                    </p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl mb-6">
+                        2
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-3">Secure Checkout</h3>
+                    <p class="text-gray-600">
+                        Pay conveniently via mobile money, credit card, or cash on delivery. Your data is always secure.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl mb-6">
+                        3
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-3">Fast Delivery</h3>
+                    <p class="text-gray-600">
+                        Track your order in real-time. Enjoy your fresh, hot meal in under 30 minutes on average.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-20 bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-up">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-10 lg:p-16">
+                        <h3 class="text-3xl font-display font-bold text-dark mb-6">
+                            Download Our <span class="text-gradient">Mobile App</span>
+                        </h3>
+                        <p class="text-lg text-gray-600 mb-8">
+                            Get exclusive app-only deals, faster checkout, order tracking, and personalized recommendations. 
+                            Available on both iOS and Android platforms.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button class="btn-3d bg-dark text-white px-6 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all flex items-center justify-center">
+                                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
+                                </svg>
+                                App Store
+                            </button>
+                            <button class="btn-3d bg-dark text-white px-6 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all flex items-center justify-center">
+                                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 3h18v18H3V3zm4.5 4.5v9h9v-9h-9z"/>
+                                </svg>
+                                Google Play
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-primary to-accent flex items-center justify-center p-8">
+                        <div class="relative w-full max-w-xs mx-auto">
+                            <div class="absolute -top-8 -left-8 w-32 h-32 bg-white/20 rounded-full"></div>
+                            <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-secondary/30 rounded-full"></div>
+                            <div class="relative z-10">
+                                <img src="https://via.placeholder.com/300x500/228B22/FFFFFF?text=BueaDelights+App" alt="Mobile App Preview" class="rounded-xl shadow-2xl">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    What Our <span class="text-gradient">Customers Say</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Don't just take our word for it. Here's what our satisfied customers have to say about their experience.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl p-8" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold mr-4">
+                            AM
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-dark">Amina M.</h4>
+                            <div class="flex items-center">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic mb-4">
+                        "The Ndolé is just like my grandmother used to make! I order at least twice a week. The delivery is always prompt and the food arrives hot."
+                    </p>
+                    <div class="text-sm text-gray-400">Buea Town Resident</div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl p-8" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold mr-4">
+                            JT
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-dark">John T.</h4>
+                            <div class="flex items-center">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic mb-4">
+                        "As an expat, I was craving authentic Cameroonian food. BueaDelights exceeded my expectations. The Achu with yellow soup is phenomenal!"
+                    </p>
+                    <div class="text-sm text-gray-400">Expat in Buea</div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="card-3d bg-white rounded-3xl shadow-xl p-8" data-aos="fade-up" data-aos-delay="300">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold mr-4">
+                            SE
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-dark">Sarah E.</h4>
+                            <div class="flex items-center">
+                                <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic mb-4">
+                        "Used their catering service for my wedding. The food was the highlight of the event! Professional, delicious, and great value for money."
+                    </p>
+                    <div class="text-sm text-gray-400">Wedding Client</div>
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <button class="btn-3d bg-white border-2 border-primary text-primary px-8 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition-all">
+                    Read More Reviews
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us -->
+    <section id="about" class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="relative" data-aos="fade-right">
+                    <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
+                        <img src="https://via.placeholder.com/600x800/228B22/FFFFFF?text=Our+Kitchen" alt="Our Kitchen" class="w-full h-auto">
+                    </div>
+                    <div class="absolute -bottom-8 -left-8 w-64 h-64 bg-secondary/20 rounded-full z-0"></div>
+                    <div class="absolute -top-8 -right-8 w-48 h-48 bg-accent/20 rounded-full z-0"></div>
+                </div>
+                <div data-aos="fade-left">
+                    <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-6">
+                        Our <span class="text-gradient">Story</span>
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-6">
+                        Founded in 2018, BueaDelights began as a small family kitchen sharing our love for authentic Cameroonian cuisine. What started as a passion project has grown into Buea's favorite food delivery service.
+                    </p>
+                    <p class="text-lg text-gray-600 mb-8">
+                        We source ingredients locally from trusted farmers and markets, ensuring each dish carries the true flavors of Cameroon while supporting our community.
+                    </p>
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <div class="text-3xl text-primary font-bold mb-2">100%</div>
+                            <div class="text-gray-600">Authentic Recipes</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <div class="text-3xl text-primary font-bold mb-2">50+</div>
+                            <div class="text-gray-600">Local Suppliers</div>
+                        </div>
+                    </div>
+                    <button class="btn-3d bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-green-700 transition-all">
+                        Meet Our Team →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Get In <span class="text-gradient">Touch</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Have questions, feedback, or special requests? We'd love to hear from you!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <div data-aos="fade-right">
+                    <div class="bg-gradient-to-br from-primary to-green-600 rounded-3xl p-8 text-white shadow-xl">
+                        <h3 class="text-2xl font-bold mb-6">Contact Information</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="bg-white/20 p-3 rounded-full mr-4">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Our Location</h4>
+                                    <p class="text-white/90">123 Molyko Street, Buea, Cameroon</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-white/20 p-3 rounded-full mr-4">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Phone Number</h4>
+                                    <p class="text-white/90">+237 6XX XXX XXX</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-white/20 p-3 rounded-full mr-4">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Email Address</h4>
+                                    <p class="text-white/90">hello@bueadelights.com</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-white/20 p-3 rounded-full mr-4">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Opening Hours</h4>
+                                    <p class="text-white/90">Monday-Sunday: 8AM - 10PM</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <h3 class="text-2xl font-bold mb-6">Follow Us</h3>
+                            <div class="flex space-x-4">
+                                <a href="#" class="social-icon bg-white/20 p-3 rounded-full hover:bg-white/30">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon bg-white/20 p-3 rounded-full hover:bg-white/30">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon bg-white/20 p-3 rounded-full hover:bg-white/30">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon bg-white/20 p-3 rounded-full hover:bg-white/30">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-xl p-8" data-aos="fade-left">
+                    <h3 class="text-2xl font-bold text-dark mb-6">Send Us a Message</h3>
+                    <form class="space-y-6">
+                        <div>
+                            <label for="name" class="block text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="your@email.com">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="+237 XXX XXX XXX">
+                        </div>
+                        <div>
+                            <label for="message" class="block text-gray-700 mb-2">Your Message</label>
+                            <textarea id="message" rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="How can we help you?"></textarea>
+                        </div>
+                        <button type="submit" class="btn-3d w-full bg-primary text-white px-6 py-4 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-16 bg-gradient-to-br from-primary to-green-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="max-w-3xl mx-auto" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Join Our Foodie Community</h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Subscribe to our newsletter and get weekly updates on new dishes, special offers, and exclusive discounts.
+                </p>
+                <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                    <input type="email" placeholder="Your email address" class="flex-grow px-6 py-4 rounded-full text-dark focus:outline-none focus:ring-2 focus:ring-secondary">
+                    <button type="submit" class="btn-3d bg-secondary text-dark px-8 py-4 rounded-full font-bold hover:bg-yellow-400 transition-all">
+                        Subscribe
+                    </button>
+                </form>
+                <p class="text-sm mt-4 opacity-70">
+                    We respect your privacy. Unsubscribe at any time.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            B
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2018.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="social-icon text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-icon text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-icon text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="#menu" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors">How It Works</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Popular Dishes</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Ndolé Special</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Achu & Yellow Soup</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Eru & Water Fufu</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Grilled Fish & Plantains</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Puff Puff & Beans</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>123 Molyko Street, Buea, Cameroon</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span>+237 6XX XXX XXX</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>hello@bueadelights.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                    © 2023 BueaDelights. All rights reserved.
+                </p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">Terms of Service</a>
+                    <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">Cookies Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
+            }
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('shadow-lg');
+                navbar.classList.add('bg-primary');
+                navbar.classList.remove('glass-effect');
+            } else {
+                navbar.classList.remove('shadow-lg');
+                navbar.classList.remove('bg-primary');
+                navbar.classList.add('glass-effect');
+            }
+        });
+
+        // Back to top button
+        const backToTopBtn = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Counter animation
+        const counters = document.querySelectorAll('.stats-counter');
+        const speed = 200;
+
+        function animateCounters() {
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const increment = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(animateCounters, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            });
+        }
+
+        // Start counter when in view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful');
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

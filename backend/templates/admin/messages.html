@@ -1,0 +1,424 @@
+<!-- backend/templates/admin/messages.html -->
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Messages Management - BueaDelights Admin{% endblock %}
+
+{% block page_title %}Messages Management{% endblock %}
+
+{% block breadcrumb %}
+<nav class="text-sm mb-6">
+    <ol class="flex items-center space-x-2 text-gray-600">
+        <li><a href="{% url 'backend:admin_dashboard' %}" class="hover:text-forest-green">Admin</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-forest-green font-medium">Messages</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .message-card {
+        transition: all 0.3s ease;
+    }
+    
+    .message-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .message-unread {
+        border-left: 4px solid #DC143C;
+        background-color: #FEF2F2;
+    }
+    
+    .message-read {
+        border-left: 4px solid #228B22;
+    }
+    
+    .message-replied {
+        border-left: 4px solid #4169E1;
+        background-color: #F0F4FF;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Actions -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+            <h2 class="text-2xl font-bold text-gray-800">Customer Messages</h2>
+            <p class="text-gray-600">Manage customer inquiries and communications</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a href="{% url 'backend:admin_bulk_email' %}" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                Send Bulk Email
+            </a>
+            
+            <button id="mark-all-read" class="btn btn-outline">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Mark All as Read
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Messages</label>
+            <input type="text" 
+                   name="q" 
+                   value="{{ current_filters.search }}"
+                   placeholder="Name, email, subject, or message content..." 
+                   class="input-field">
+        </div>
+        
+        <!-- Status Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select name="status" class="input-field">
+                <option value="">All Messages</option>
+                <option value="unread" {% if current_filters.status == 'unread' %}selected{% endif %}>
+                    Unread Messages
+                </option>
+                <option value="read" {% if current_filters.status == 'read' %}selected{% endif %}>
+                    Read Messages
+                </option>
+                <option value="replied" {% if current_filters.status == 'replied' %}selected{% endif %}>
+                    Replied Messages
+                </option>
+            </select>
+        </div>
+        
+        <!-- Filter Actions -->
+        <div class="flex items-end gap-3">
+            <button type="submit" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Search
+            </button>
+            
+            <a href="{% url 'backend:admin_messages' %}" class="btn btn-outline">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Clear
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Messages List -->
+<div class="space-y-4">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="message-card bg-white rounded-xl shadow-lg p-6 
+        {% if not message.is_read %}message-unread
+        {% elif message.admin_response %}message-replied
+        {% else %}message-read{% endif %}">
+        
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">{{ message.subject }}</h3>
+                    
+                    <!-- Status Badges -->
+                    {% if not message.is_read %}
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                        New
+                    </span>
+                    {% elif message.admin_response %}
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Replied
+                    </span>
+                    {% else %}
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Read
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                        </svg>
+                        <span class="font-medium">{{ message.name }}</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                        </svg>
+                        <a href="mailto:{{ message.email }}" class="text-forest-green hover:text-green-700">
+                            {{ message.email }}
+                        </a>
+                    </div>
+                    
+                    {% if message.phone %}
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                        </svg>
+                        <a href="https://wa.me/{{ message.phone|cut:'+' }}" target="_blank" class="text-green-500 hover:text-green-700">
+                            {{ message.phone }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <p class="text-gray-700 mb-4">{{ message.message|linebreaks|truncatewords:50 }}</p>
+                
+                {% if message.admin_response %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm font-medium text-blue-800">Admin Response</span>
+                        <span class="text-xs text-blue-600 ml-2">{{ message.responded_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <p class="text-blue-700 text-sm">{{ message.admin_response|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="text-right text-sm text-gray-500 ml-4">
+                <div>{{ message.created_at|date:"M d, Y" }}</div>
+                <div>{{ message.created_at|time:"H:i" }}</div>
+                <div class="text-xs mt-1">{{ message.created_at|timesince }} ago</div>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                {% if not message.is_read %}
+                <button class="mark-read-btn text-green-600 hover:text-green-700 text-sm font-medium" 
+                        data-message-id="{{ message.id }}">
+                    <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Mark as Read
+                </button>
+                {% endif %}
+                
+                <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" 
+                   class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Quick Email
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <a href="{% url 'backend:admin_message_detail' message.id %}" 
+                   class="btn btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    {% if message.admin_response %}View Details{% else %}Reply{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} messages
+            </div>
+            
+            <nav class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-forest-green text-white rounded-md">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Messages State -->
+    <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No messages found</h3>
+        <p class="text-gray-500 mb-6">
+            {% if current_filters.search or current_filters.status %}
+                No messages match your current filters. Try adjusting your search criteria.
+            {% else %}
+                When customers send messages through your contact form, they will appear here.
+            {% endif %}
+        </p>
+        
+        {% if current_filters.search or current_filters.status %}
+        <a href="{% url 'backend:admin_messages' %}" class="btn btn-primary">
+            Clear Filters
+        </a>
+        {% else %}
+        <a href="{% url 'backend:admin_bulk_email' %}" class="btn btn-primary">
+            Send Bulk Email
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistics Summary -->
+{% if messages %}
+<div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-gray-500">Unread</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ unread_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-gray-500">Replied</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ replied_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-gray-500">Today</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ today_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-gray-500">Total</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ page_obj.paginator.count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mark individual message as read
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const messageId = this.dataset.messageId;
+            
+            fetch(`/admin/messages/${messageId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+    
+    // Mark all messages as read
+    document.getElementById('mark-all-read').addEventListener('click', function() {
+        if (confirm('Mark all messages as read?')) {
+            fetch('/admin/messages/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

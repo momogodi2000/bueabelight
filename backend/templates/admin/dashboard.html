@@ -1,0 +1,430 @@
+<!-- backend/templates/admin/dashboard.html -->
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - BueaDelights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .revenue-card {
+        background: linear-gradient(135deg, #228B22, #32CD32);
+    }
+    
+    .orders-card {
+        background: linear-gradient(135deg, #DC143C, #FF6347);
+    }
+    
+    .products-card {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+    }
+    
+    .customers-card {
+        background: linear-gradient(135deg, #4169E1, #6495ED);
+    }
+    
+    .activity-card {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block breadcrumb %}
+<nav class="text-sm mb-6">
+    <ol class="flex items-center space-x-2 text-gray-600">
+        <li><a href="{% url 'backend:admin_dashboard' %}" class="hover:text-forest-green">Admin</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-forest-green font-medium">Dashboard</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome back! 👋</h1>
+            <p class="text-gray-600">Here's what's happening with your business today.</p>
+        </div>
+        <div class="text-right">
+            <div class="text-sm text-gray-500">Today's Date</div>
+            <div class="text-lg font-semibold text-gray-800">{{ "now"|date:"F d, Y" }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Revenue -->
+    <div class="stat-card revenue-card text-white rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-green-100 text-sm font-medium">Total Revenue</p>
+                <p class="text-3xl font-bold">{{ total_revenue|floatformat:0 }}</p>
+                <p class="text-xs text-green-200">FCFA</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center text-sm">
+            <span class="text-green-200">Today: {{ today_revenue|floatformat:0 }} FCFA</span>
+        </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="stat-card orders-card text-white rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-red-100 text-sm font-medium">Total Orders</p>
+                <p class="text-3xl font-bold">{{ total_orders }}</p>
+                <p class="text-xs text-red-200">All time</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2L3 7v11a2 2 0 002 2h10a2 2 0 002-2V7l-7-5zM8 15V9h4v6H8z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center text-sm">
+            <span class="text-red-200">Today: {{ today_orders }} orders</span>
+        </div>
+    </div>
+
+    <!-- Total Products -->
+    <div class="stat-card products-card text-white rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-yellow-100 text-sm font-medium">Products</p>
+                <p class="text-3xl font-bold">{{ total_products }}</p>
+                <p class="text-xs text-yellow-200">{{ active_products }} active</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center text-sm">
+            <span class="text-yellow-200">{{ low_stock_products }} low stock</span>
+        </div>
+    </div>
+
+    <!-- Total Customers -->
+    <div class="stat-card customers-card text-white rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-blue-100 text-sm font-medium">Customers</p>
+                <p class="text-3xl font-bold">{{ total_customers }}</p>
+                <p class="text-xs text-blue-200">Unique customers</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center text-sm">
+            <span class="text-blue-200">{{ repeat_customers }} returning</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Analytics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Revenue Chart -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Revenue Trend (Last 7 Days)</h3>
+            <a href="{% url 'backend:admin_analytics' %}" class="text-forest-green hover:text-green-700 text-sm font-medium">
+                View Details →
+            </a>
+        </div>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Orders by Status -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Orders by Status</h3>
+            <a href="{% url 'backend:admin_orders' %}" class="text-forest-green hover:text-green-700 text-sm font-medium">
+                Manage Orders →
+            </a>
+        </div>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions and Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+        <div class="space-y-3">
+            <a href="{% url 'backend:admin_product_create' %}" 
+               class="flex items-center p-3 bg-forest-green text-white rounded-lg hover:bg-green-700 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+                Add New Product
+            </a>
+            
+            <a href="{% url 'backend:admin_orders' %}?status=pending" 
+               class="flex items-center p-3 bg-warm-red text-white rounded-lg hover:bg-red-700 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Process Orders ({{ pending_orders }})
+            </a>
+            
+            <a href="{% url 'backend:admin_messages' %}?status=unread" 
+               class="flex items-center p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                </svg>
+                Reply to Messages
+            </a>
+            
+            <a href="{% url 'backend:admin_bulk_email' %}" 
+               class="flex items-center p-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                </svg>
+                Send Bulk Email
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Recent Orders</h3>
+            <a href="{% url 'backend:admin_orders' %}" class="text-forest-green hover:text-green-700 text-sm font-medium">
+                View All →
+            </a>
+        </div>
+        <div class="space-y-3 activity-card">
+            {% for order in recent_orders %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                    <p class="font-medium text-gray-800">{{ order.order_id }}</p>
+                    <p class="text-sm text-gray-600">{{ order.customer_name }}</p>
+                    <p class="text-xs text-gray-500">{{ order.created_at|timesince }} ago</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-semibold text-gray-800">{{ order.total_amount|floatformat:0 }} FCFA</p>
+                    <span class="inline-block px-2 py-1 text-xs rounded-full
+                        {% if order.order_status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.order_status == 'confirmed' %}bg-blue-100 text-blue-800
+                        {% elif order.order_status == 'delivered' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ order.get_order_status_display }}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-center py-4">No recent orders</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Recent Messages</h3>
+            <a href="{% url 'backend:admin_messages' %}" class="text-forest-green hover:text-green-700 text-sm font-medium">
+                View All →
+            </a>
+        </div>
+        <div class="space-y-3 activity-card">
+            {% for message in recent_messages %}
+            <div class="p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="font-medium text-gray-800">{{ message.name }}</p>
+                    <span class="text-xs text-gray-500">{{ message.created_at|timesince }} ago</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">{{ message.subject }}</p>
+                <p class="text-xs text-gray-500">{{ message.message|truncatewords:15 }}</p>
+                <a href="{% url 'backend:admin_message_detail' message.id %}" 
+                   class="text-xs text-forest-green hover:text-green-700 font-medium">
+                    Reply →
+                </a>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-center py-4">No unread messages</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Top Selling Products -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-semibold text-gray-800">Top Selling Products</h3>
+        <a href="{% url 'backend:admin_analytics' %}" class="text-forest-green hover:text-green-700 text-sm font-medium">
+            View Analytics →
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Product</th>
+                    <th class="text-right py-3 px-4 font-medium text-gray-700">Sold</th>
+                    <th class="text-right py-3 px-4 font-medium text-gray-700">Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in top_products %}
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-gray-800">{{ product.product__name }}</div>
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-600">{{ product.total_sold }}</td>
+                    <td class="py-3 px-4 text-right font-semibold text-gray-800">
+                        {{ product.total_revenue|floatformat:0 }} FCFA
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="py-8 text-center text-gray-500">No sales data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Low Stock Alert -->
+{% if low_stock_products > 0 %}
+<div class="bg-orange-50 border border-orange-200 rounded-xl p-6">
+    <div class="flex items-center">
+        <div class="flex-shrink-0">
+            <svg class="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-orange-800">Low Stock Alert</h3>
+            <p class="text-sm text-orange-700">
+                You have {{ low_stock_products }} product{{ low_stock_products|pluralize }} with low stock (less than 5 items).
+            </p>
+        </div>
+        <div class="ml-auto">
+            <a href="{% url 'backend:admin_products' %}?status=low_stock" 
+               class="btn btn-outline text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
+                Review Stock
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueData = {{ revenue_chart_data|safe }};
+
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: revenueData.map(item => item.date),
+        datasets: [{
+            label: 'Revenue (FCFA)',
+            data: revenueData.map(item => item.revenue),
+            borderColor: '#228B22',
+            backgroundColor: 'rgba(34, 139, 34, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value.toLocaleString() + ' FCFA';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusData = {{ order_status_data|safe }};
+
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: statusData.map(item => item.status),
+        datasets: [{
+            data: statusData.map(item => item.count),
+            backgroundColor: [
+                '#FFD700',
+                '#228B22',
+                '#DC143C',
+                '#4169E1',
+                '#32CD32',
+                '#FF6347'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Auto-refresh dashboard every 5 minutes
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

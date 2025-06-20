@@ -1,0 +1,493 @@
+<!-- backend/templates/admin/orders.html -->
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Orders Management - BueaDelights Admin{% endblock %}
+
+{% block page_title %}Orders Management{% endblock %}
+
+{% block breadcrumb %}
+<nav class="text-sm mb-6">
+    <ol class="flex items-center space-x-2 text-gray-600">
+        <li><a href="{% url 'backend:admin_dashboard' %}" class="hover:text-forest-green">Admin</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-forest-green font-medium">Orders</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-status-pending { @apply bg-yellow-100 text-yellow-800; }
+    .order-status-confirmed { @apply bg-blue-100 text-blue-800; }
+    .order-status-preparing { @apply bg-purple-100 text-purple-800; }
+    .order-status-ready { @apply bg-orange-100 text-orange-800; }
+    .order-status-delivered { @apply bg-green-100 text-green-800; }
+    .order-status-cancelled { @apply bg-red-100 text-red-800; }
+    
+    .payment-status-pending { @apply bg-yellow-100 text-yellow-800; }
+    .payment-status-completed { @apply bg-green-100 text-green-800; }
+    .payment-status-failed { @apply bg-red-100 text-red-800; }
+    .payment-status-refunded { @apply bg-gray-100 text-gray-800; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Actions -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+            <h2 class="text-2xl font-bold text-gray-800">Orders Management</h2>
+            <p class="text-gray-600">Manage customer orders and track deliveries</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button id="export-orders" class="btn btn-outline">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Orders
+            </button>
+            
+            <button id="bulk-actions-btn" class="btn btn-primary" disabled>
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                </svg>
+                Bulk Actions
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <!-- Search -->
+        <div class="xl:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Orders</label>
+            <input type="text" 
+                   name="q" 
+                   value="{{ current_filters.search }}"
+                   placeholder="Order ID, customer name, phone..." 
+                   class="input-field">
+        </div>
+        
+        <!-- Status Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Order Status</label>
+            <select name="status" class="input-field">
+                <option value="">All Statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Payment Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+            <select name="payment" class="input-field">
+                <option value="">All Payments</option>
+                {% for value, label in payment_choices %}
+                <option value="{{ value }}" {% if current_filters.payment == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Date Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <select name="date" class="input-field">
+                <option value="">All Time</option>
+                <option value="today" {% if current_filters.date == 'today' %}selected{% endif %}>Today</option>
+                <option value="week" {% if current_filters.date == 'week' %}selected{% endif %}>This Week</option>
+                <option value="month" {% if current_filters.date == 'month' %}selected{% endif %}>This Month</option>
+            </select>
+        </div>
+        
+        <!-- Filter Actions -->
+        <div class="xl:col-span-5 flex gap-3">
+            <button type="submit" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/>
+                </svg>
+                Apply Filters
+            </button>
+            
+            <a href="{% url 'backend:admin_orders' %}" class="btn btn-outline">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Clear All
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Orders Table -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">
+                Orders 
+                {% if orders %}
+                ({{ page_obj.paginator.count }} total)
+                {% endif %}
+            </h3>
+            
+            <!-- Bulk Actions Dropdown -->
+            <div id="bulk-actions-menu" class="relative hidden">
+                <select id="bulk-action-select" class="input-field w-48">
+                    <option value="">Choose Action...</option>
+                    <option value="confirmed">Mark as Confirmed</option>
+                    <option value="preparing">Mark as Preparing</option>
+                    <option value="ready">Mark as Ready</option>
+                    <option value="delivered">Mark as Delivered</option>
+                    <option value="mark_paid">Mark as Paid</option>
+                    <option value="cancelled">Mark as Cancelled</option>
+                </select>
+                <button id="apply-bulk-action" class="btn btn-primary ml-2" disabled>Apply</button>
+            </div>
+        </div>
+    </div>
+    
+    {% if orders %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left">
+                        <input type="checkbox" id="select-all" class="form-checkbox text-forest-green">
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Order Details
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Customer
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Payment
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-50 transition-colors" data-order-id="{{ order.id }}">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" name="selected_orders" value="{{ order.id }}" 
+                               class="order-checkbox form-checkbox text-forest-green">
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ order.order_id }}</div>
+                                <div class="text-sm text-gray-500">{{ order.items.count }} item{{ order.items.count|pluralize }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ order.customer_name }}</div>
+                        <div class="text-sm text-gray-500">{{ order.customer_phone }}</div>
+                        {% if order.customer_email %}
+                        <div class="text-xs text-gray-400">{{ order.customer_email }}</div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ order.total_amount|add:order.delivery_fee|floatformat:0 }} FCFA
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Items: {{ order.total_amount|floatformat:0 }} + Delivery: {{ order.delivery_fee|floatformat:0 }}
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full order-status-{{ order.order_status }}">
+                            {{ order.get_order_status_display }}
+                        </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full payment-status-{{ order.payment_status }}">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                        <div class="text-xs text-gray-500 mt-1">
+                            {{ order.get_payment_method_display }}
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div>{{ order.created_at|date:"M d, Y" }}</div>
+                        <div class="text-xs">{{ order.created_at|time:"H:i" }}</div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end space-x-2">
+                            <!-- View Details -->
+                            <a href="{% url 'backend:admin_order_detail' order.order_id %}" 
+                               class="text-forest-green hover:text-green-700 p-1 rounded"
+                               title="View Details">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                            
+                            <!-- WhatsApp Contact -->
+                            <a href="https://wa.me/{{ order.customer_phone|cut:'+' }}?text=Hello {{ order.customer_name }}, regarding your order {{ order.order_id }}..." 
+                               target="_blank"
+                               class="text-green-500 hover:text-green-700 p-1 rounded"
+                               title="Contact via WhatsApp">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                                </svg>
+                            </a>
+                            
+                            <!-- Quick Status Update -->
+                            <div class="relative">
+                                <button class="status-dropdown-btn text-blue-500 hover:text-blue-700 p-1 rounded" 
+                                        data-order-id="{{ order.id }}"
+                                        title="Quick Status Update">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} orders
+            </div>
+            
+            <nav class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-forest-green text-white rounded-md">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Orders State -->
+    <div class="p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+        <p class="text-gray-500 mb-6">
+            {% if current_filters.search or current_filters.status or current_filters.payment or current_filters.date %}
+                No orders match your current filters. Try adjusting your search criteria.
+            {% else %}
+                When customers place orders, they will appear here.
+            {% endif %}
+        </p>
+        
+        {% if current_filters.search or current_filters.status or current_filters.payment or current_filters.date %}
+        <a href="{% url 'backend:admin_orders' %}" class="btn btn-primary">
+            Clear Filters
+        </a>
+        {% else %}
+        <a href="{% url 'backend:home' %}" class="btn btn-primary">
+            Visit Store
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select All functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+    const bulkActionsBtn = document.getElementById('bulk-actions-btn');
+    const bulkActionsMenu = document.getElementById('bulk-actions-menu');
+    const bulkActionSelect = document.getElementById('bulk-action-select');
+    const applyBulkActionBtn = document.getElementById('apply-bulk-action');
+    
+    // Update bulk actions visibility
+    function updateBulkActions() {
+        const selectedCount = document.querySelectorAll('.order-checkbox:checked').length;
+        
+        if (selectedCount > 0) {
+            bulkActionsBtn.disabled = false;
+            bulkActionsBtn.textContent = `Bulk Actions (${selectedCount})`;
+            bulkActionsMenu.classList.remove('hidden');
+        } else {
+            bulkActionsBtn.disabled = true;
+            bulkActionsBtn.textContent = 'Bulk Actions';
+            bulkActionsMenu.classList.add('hidden');
+        }
+    }
+    
+    // Select all checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        orderCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBulkActions();
+    });
+    
+    // Individual checkboxes
+    orderCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(orderCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(orderCheckboxes).some(cb => cb.checked);
+            
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            
+            updateBulkActions();
+        });
+    });
+    
+    // Enable apply button when action is selected
+    bulkActionSelect.addEventListener('change', function() {
+        applyBulkActionBtn.disabled = !this.value;
+    });
+    
+    // Apply bulk action
+    applyBulkActionBtn.addEventListener('click', function() {
+        const selectedOrders = Array.from(document.querySelectorAll('.order-checkbox:checked')).map(cb => cb.value);
+        const action = bulkActionSelect.value;
+        
+        if (!selectedOrders.length || !action) return;
+        
+        if (confirm(`Are you sure you want to ${action.replace('_', ' ')} ${selectedOrders.length} order(s)?`)) {
+            // Send bulk update request
+            fetch('{% url "backend:admin_bulk_order_update" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    order_ids: selectedOrders,
+                    action: action.includes('mark_') ? 'mark_paid' : 'update_status',
+                    status: action === 'mark_paid' ? null : action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating orders: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating orders');
+            });
+        }
+    });
+    
+    // Export orders
+    document.getElementById('export-orders').addEventListener('click', function() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', 'csv');
+        window.location.href = '?' + params.toString();
+    });
+    
+    // Quick status update dropdowns
+    document.querySelectorAll('.status-dropdown-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const orderId = this.dataset.orderId;
+            
+            // Create a simple prompt for now (you can enhance this with a modal)
+            const newStatus = prompt('Enter new status (pending/confirmed/preparing/ready/delivered/cancelled):');
+            
+            if (newStatus && ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'].includes(newStatus)) {
+                fetch('{% url "backend:admin_bulk_order_update" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        order_ids: [orderId],
+                        action: 'update_status',
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating order status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating order status');
+                });
+            }
+        });
+    });
+});
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    // Only refresh if no checkboxes are selected to avoid losing selection
+    const hasSelected = document.querySelectorAll('.order-checkbox:checked').length > 0;
+    if (!hasSelected) {
+        location.reload();
+    }
+}, 30000);
+</script>
+{% endblock %}
