@@ -1,0 +1,722 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - BueaDelights</title>
+    <meta name="description" content="Review your order before checkout. Fresh Cameroonian dishes ready for delivery in Buea.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out',
+                        'shake': 'shake 0.5s ease-in-out'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .quantity-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .quantity-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .cart-item {
+            transition: all 0.3s ease;
+        }
+        
+        .cart-item.removing {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .cart-badge {
+            min-width: 1.25rem;
+            height: 1.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .empty-cart-animation {
+            animation: bounce-slow 2s infinite;
+        }
+        
+        .price-highlight {
+            background: linear-gradient(45deg, var(--secondary), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .total-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-3px) scale(1.01);
+            }
+            
+            .cart-item {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-primary shadow-lg transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-secondary to-yellow-300 rounded-full flex items-center justify-center text-dark font-bold text-lg">
+                        🛒
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'backend:home' %}" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="{% url 'backend:products' %}" class="text-white hover:text-secondary transition-colors">Menu</a>
+                    <a href="{% url 'backend:catering' %}" class="text-white hover:text-secondary transition-colors">Catering</a>
+                    <a href="{% url 'backend:about' %}" class="text-white hover:text-secondary transition-colors">About</a>
+                    <a href="{% url 'backend:contact' %}" class="text-white hover:text-secondary transition-colors">Contact</a>
+                    
+                    <!-- Cart Icon -->
+                    <a href="{% url 'backend:cart' %}" class="relative text-secondary font-semibold">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m12.5 6v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full cart-badge flex items-center justify-center cart-count">{{ cart_items|length }}</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_login' %}" class="text-white hover:text-secondary transition-colors text-sm">
+                        Admin
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden bg-primary/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'backend:home' %}" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="{% url 'backend:products' %}" class="block px-3 py-2 text-white hover:text-secondary">Menu</a>
+                <a href="{% url 'backend:catering' %}" class="block px-3 py-2 text-white hover:text-secondary">Catering</a>
+                <a href="{% url 'backend:about' %}" class="block px-3 py-2 text-white hover:text-secondary">About</a>
+                <a href="{% url 'backend:contact' %}" class="block px-3 py-2 text-white hover:text-secondary">Contact</a>
+                <a href="{% url 'backend:cart' %}" class="block px-3 py-2 text-secondary font-semibold">
+                    🛒 Cart ({{ cart_items|length }})
+                </a>
+                <a href="{% url 'backend:admin_login' %}" class="block px-3 py-2 text-white hover:text-secondary">Admin Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-16 pb-12 text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-display font-bold mb-6">
+                    Your <span class="price-highlight">Shopping Cart</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100">
+                    {% if cart_items %}
+                        Review your delicious selections before checkout
+                    {% else %}
+                        Your cart is empty - let's fix that!
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Content -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {% if cart_items %}
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <!-- Cart Items -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-right">
+                            <div class="p-6 border-b border-gray-200">
+                                <h2 class="text-2xl font-bold text-dark flex items-center">
+                                    🛒 Cart Items
+                                    <span class="ml-3 text-sm bg-primary text-white px-3 py-1 rounded-full">{{ cart_items|length }}</span>
+                                </h2>
+                            </div>
+                            
+                            <div class="p-6">
+                                {% for item in cart_items %}
+                                <div class="cart-item flex items-center space-x-4 p-6 border border-gray-100 rounded-2xl mb-4 bg-gray-50/50 hover:bg-white hover:shadow-lg transition-all" data-product-id="{{ item.product.id }}">
+                                    <!-- Product Image -->
+                                    <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="w-full h-full bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white text-2xl">
+                                                🍲
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Product Details -->
+                                    <div class="flex-grow">
+                                        <h3 class="font-bold text-lg text-dark">{{ item.product.name }}</h3>
+                                        <p class="text-gray-600 text-sm">{{ item.product.category.name }}</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-lg font-bold text-primary">{{ item.price|floatformat:0 }} FCFA</span>
+                                            <span class="text-sm text-gray-500">each</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quantity Controls -->
+                                    <div class="flex items-center space-x-3">
+                                        <button class="quantity-btn w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-dark font-bold" onclick="updateQuantity('{{ item.product.id }}', {{ item.quantity|add:'-1' }})">
+                                            −
+                                        </button>
+                                        <span class="w-12 text-center font-bold text-lg">{{ item.quantity }}</span>
+                                        <button class="quantity-btn w-8 h-8 rounded-full bg-primary hover:bg-green-700 flex items-center justify-center text-white font-bold" onclick="updateQuantity('{{ item.product.id }}', {{ item.quantity|add:'1' }})">
+                                            +
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Item Total -->
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-dark">{{ item.total|floatformat:0 }} FCFA</div>
+                                        <button class="text-accent hover:text-red-700 text-sm mt-1 transition-colors" onclick="removeFromCart('{{ item.product.id }}')">
+                                            🗑️ Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <!-- Cart Actions -->
+                                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                                    <button onclick="clearCart()" class="btn-3d flex-1 bg-gray-100 text-dark px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition-all">
+                                        🗑️ Clear Cart
+                                    </button>
+                                    <a href="{% url 'backend:products' %}" class="btn-3d flex-1 bg-accent text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition-all text-center">
+                                        ← Continue Shopping
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Summary -->
+                    <div class="lg:col-span-1">
+                        <div class="total-section rounded-3xl shadow-xl overflow-hidden sticky top-24" data-aos="fade-left">
+                            <div class="p-6 border-b border-gray-200">
+                                <h2 class="text-2xl font-bold text-dark flex items-center">
+                                    💰 Order Summary
+                                </h2>
+                            </div>
+                            
+                            <div class="p-6 space-y-4">
+                                <!-- Subtotal -->
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Subtotal</span>
+                                    <span class="font-semibold text-lg">{{ cart_total|floatformat:0 }} FCFA</span>
+                                </div>
+                                
+                                <!-- Delivery Fee -->
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Delivery Fee</span>
+                                    <span class="font-semibold text-lg">{{ delivery_fee|floatformat:0 }} FCFA</span>
+                                </div>
+                                
+                                <!-- Discount (if applicable) -->
+                                <div class="flex justify-between items-center text-green-600">
+                                    <span>Discount</span>
+                                    <span class="font-semibold">0 FCFA</span>
+                                </div>
+                                
+                                <hr class="border-gray-300">
+                                
+                                <!-- Total -->
+                                <div class="flex justify-between items-center text-2xl font-bold">
+                                    <span class="text-dark">Total</span>
+                                    <span class="price-highlight">{{ grand_total|floatformat:0 }} FCFA</span>
+                                </div>
+                                
+                                <!-- Estimated Delivery Time -->
+                                <div class="bg-green-50 p-4 rounded-xl">
+                                    <div class="flex items-center space-x-2 text-green-700">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="font-semibold">Estimated Delivery</span>
+                                    </div>
+                                    <p class="text-green-600 font-bold text-lg mt-1">25-35 minutes</p>
+                                </div>
+                                
+                                <!-- Checkout Button -->
+                                <a href="{% url 'backend:checkout' %}" class="btn-3d w-full bg-primary text-white px-8 py-4 rounded-full font-bold hover:bg-green-700 transition-all text-center block mt-8">
+                                    🚀 Proceed to Checkout
+                                </a>
+                                
+                                <!-- Payment Methods -->
+                                <div class="mt-6 text-center">
+                                    <p class="text-sm text-gray-600 mb-3">We accept:</p>
+                                    <div class="flex justify-center space-x-4">
+                                        <div class="bg-green-100 p-2 rounded-lg">
+                                            <span class="text-green-700 font-semibold text-xs">WhatsApp</span>
+                                        </div>
+                                        <div class="bg-blue-100 p-2 rounded-lg">
+                                            <span class="text-blue-700 font-semibold text-xs">Mobile Money</span>
+                                        </div>
+                                        <div class="bg-yellow-100 p-2 rounded-lg">
+                                            <span class="text-yellow-700 font-semibold text-xs">Cash</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Empty Cart -->
+                <div class="text-center py-20" data-aos="fade-up">
+                    <div class="empty-cart-animation text-8xl mb-8">🛒</div>
+                    <h3 class="text-4xl font-bold text-dark mb-6">Your cart is empty</h3>
+                    <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                        Looks like you haven't added any delicious dishes to your cart yet. 
+                        Browse our menu and discover amazing Cameroonian flavors!
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+                        <a href="{% url 'backend:products' %}" class="btn-3d bg-primary text-white px-10 py-4 rounded-full font-bold hover:bg-green-700 transition-all">
+                            🍽️ Browse Menu
+                        </a>
+                        <a href="{% url 'backend:home' %}" class="btn-3d border-2 border-primary text-primary px-10 py-4 rounded-full font-bold hover:bg-primary hover:text-white transition-all">
+                            🏠 Back to Home
+                        </a>
+                    </div>
+                    
+                    <!-- Popular Items Suggestion -->
+                    <div class="max-w-4xl mx-auto">
+                        <h4 class="text-2xl font-bold text-dark mb-6">Popular Items</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="card-3d bg-white rounded-2xl shadow-lg overflow-hidden p-6">
+                                <div class="text-4xl mb-3">🍲</div>
+                                <h5 class="font-bold mb-2">Ndolé Special</h5>
+                                <p class="text-gray-600 text-sm mb-3">Traditional peanut and leaf stew</p>
+                                <div class="text-primary font-bold">4,500 FCFA</div>
+                            </div>
+                            <div class="card-3d bg-white rounded-2xl shadow-lg overflow-hidden p-6">
+                                <div class="text-4xl mb-3">🍛</div>
+                                <h5 class="font-bold mb-2">Achu & Yellow Soup</h5>
+                                <p class="text-gray-600 text-sm mb-3">Authentic Cameroon specialty</p>
+                                <div class="text-primary font-bold">3,800 FCFA</div>
+                            </div>
+                            <div class="card-3d bg-white rounded-2xl shadow-lg overflow-hidden p-6">
+                                <div class="text-4xl mb-3">🐟</div>
+                                <h5 class="font-bold mb-2">Grilled Fish</h5>
+                                <p class="text-gray-600 text-sm mb-3">Fresh catch with spices</p>
+                                <div class="text-primary font-bold">5,200 FCFA</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- WhatsApp Support -->
+    <section class="py-16 bg-gradient-to-br from-primary to-green-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="max-w-3xl mx-auto" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Need Help with Your Order?</h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Our friendly team is here to assist you 24/7. Chat with us on WhatsApp for instant support!
+                </p>
+                <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20help%20with%20my%20cart." class="btn-3d bg-green-500 text-white px-8 py-4 rounded-xl font-semibold hover:bg-green-600 transition-all inline-flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                    Chat with Support
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            🍽️
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2020.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'backend:home' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'backend:products' %}" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="{% url 'backend:catering' %}" class="text-gray-400 hover:text-white transition-colors">Catering</a></li>
+                        <li><a href="{% url 'backend:about' %}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{% url 'backend:contact' %}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Popular Dishes</h4>
+                    <ul class="space-y-3">
+                        <li><span class="text-gray-400">Ndolé Special</span></li>
+                        <li><span class="text-gray-400">Achu & Yellow Soup</span></li>
+                        <li><span class="text-gray-400">Eru & Water Fufu</span></li>
+                        <li><span class="text-gray-400">Grilled Fish</span></li>
+                        <li><span class="text-gray-400">Puff Puff & Beans</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li>📍 Buea, Southwest Region, Cameroon</li>
+                        <li>📱 +237 6 99 80 82 60</li>
+                        <li>✉️ info@bueadelights.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    © 2025 BueaDelights. All rights reserved. Made with ❤️ in Buea, Cameroon.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20help%20with%20my%20cart." 
+       class="fixed bottom-8 left-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all z-50 animate-pulse"
+       title="Chat with us on WhatsApp">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
+            }
+        });
+
+        // Update quantity function
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            
+            fetch('{% url "backend:update_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: newQuantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload to update totals
+                } else {
+                    showNotification('Error updating cart', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error updating cart', 'error');
+            });
+        }
+
+        // Remove from cart function
+        function removeFromCart(productId) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                return;
+            }
+            
+            const cartItem = document.querySelector(`[data-product-id="${productId}"]`);
+            if (cartItem) {
+                cartItem.classList.add('removing');
+            }
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            
+            fetch('{% url "backend:remove_from_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    product_id: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setTimeout(() => {
+                        location.reload(); // Reload to update cart
+                    }, 300);
+                } else {
+                    showNotification('Error removing item', 'error');
+                    if (cartItem) {
+                        cartItem.classList.remove('removing');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error removing item', 'error');
+                if (cartItem) {
+                    cartItem.classList.remove('removing');
+                }
+            });
+        }
+
+        // Clear cart function
+        function clearCart() {
+            if (!confirm('Are you sure you want to clear your entire cart?')) {
+                return;
+            }
+            
+            fetch('{% url "backend:clear_cart" %}', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showNotification('Error clearing cart', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error clearing cart', 'error');
+            });
+        }
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm animate-fade-in-down ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Auto-save cart state (PWA feature)
+        window.addEventListener('beforeunload', function() {
+            // This helps maintain cart state for PWA offline usage
+            localStorage.setItem('cartLastAccessed', Date.now());
+        });
+    </script>
+    {% csrf_token %}
+</body>
+</html>

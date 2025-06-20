@@ -1,0 +1,750 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - BueaDelights</title>
+    <meta name="description" content="Your order has been confirmed! Track your delicious Cameroonian dishes on their way to you.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out',
+                        'celebration': 'celebration 2s ease-in-out infinite',
+                        'truck-bounce': 'truckBounce 2s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes celebration {
+            0%, 100% { transform: rotate(-3deg) scale(1); }
+            50% { transform: rotate(3deg) scale(1.1); }
+        }
+        
+        @keyframes truckBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: var(--primary);
+            stroke-miterlimit: 10;
+            margin: 0 auto;
+            box-shadow: inset 0px 0px 0px var(--primary);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+        
+        .success-checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: var(--primary);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        
+        .success-checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+        
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px var(--primary);
+            }
+        }
+        
+        .price-highlight {
+            background: linear-gradient(45deg, var(--secondary), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .timeline-step {
+            position: relative;
+        }
+        
+        .timeline-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -50%;
+            width: 100%;
+            height: 3px;
+            background: #e5e7eb;
+            z-index: 1;
+        }
+        
+        .timeline-step.completed:not(:last-child)::after {
+            background: var(--primary);
+        }
+        
+        .timeline-step.active:not(:last-child)::after {
+            background: linear-gradient(90deg, var(--primary) 50%, #e5e7eb 50%);
+        }
+        
+        .order-item {
+            transition: all 0.3s ease;
+        }
+        
+        .order-item:hover {
+            transform: translateX(5px);
+            background: #f9fafb;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            animation: confetti-fall 3s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-3px) scale(1.01);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-primary shadow-lg transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-secondary to-yellow-300 rounded-full flex items-center justify-center text-dark font-bold text-lg animate-celebration">
+                        ✅
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'backend:home' %}" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="{% url 'backend:products' %}" class="text-white hover:text-secondary transition-colors">Menu</a>
+                    <a href="{% url 'backend:cart' %}" class="text-white hover:text-secondary transition-colors">Cart</a>
+                    <span class="text-secondary font-semibold">Order Confirmed</span>
+                    <a href="{% url 'backend:admin_login' %}" class="text-white hover:text-secondary transition-colors text-sm">
+                        Admin
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden bg-primary/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'backend:home' %}" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="{% url 'backend:products' %}" class="block px-3 py-2 text-white hover:text-secondary">Menu</a>
+                <a href="{% url 'backend:cart' %}" class="block px-3 py-2 text-white hover:text-secondary">Cart</a>
+                <span class="block px-3 py-2 text-secondary font-semibold">Order Confirmed</span>
+                <a href="{% url 'backend:admin_login' %}" class="block px-3 py-2 text-white hover:text-secondary">Admin Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Success Hero Section -->
+    <section class="hero-gradient pt-16 pb-12 text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center" data-aos="fade-up">
+                <!-- Success Checkmark -->
+                <div class="mb-8">
+                    <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="success-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="success-checkmark__check" fill="none" d="m14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl font-display font-bold mb-6">
+                    Order <span class="price-highlight">Confirmed!</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100">
+                    Thank you {{ order.customer_name }}! Your delicious order is confirmed and being prepared with love.
+                </p>
+                
+                <!-- Order ID -->
+                <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-md mx-auto mb-8">
+                    <p class="text-white/80 mb-2">Order Number</p>
+                    <div class="text-3xl font-bold text-secondary">#{{ order.order_id }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Timeline -->
+    <section class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-dark mb-4">Track Your Order</h2>
+                <p class="text-gray-600">Follow your order's journey from our kitchen to your doorstep</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12" data-aos="fade-up" data-aos-delay="200">
+                <!-- Step 1: Order Confirmed -->
+                <div class="timeline-step completed flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl relative z-10 mb-4">
+                        ✓
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Order Confirmed</h3>
+                    <p class="text-sm text-gray-600">{{ order.created_at|date:"H:i" }}</p>
+                    <p class="text-xs text-green-600 font-semibold mt-1">Completed</p>
+                </div>
+                
+                <!-- Step 2: Preparing -->
+                <div class="timeline-step active flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-secondary rounded-full flex items-center justify-center text-dark text-2xl relative z-10 mb-4 animate-pulse-slow">
+                        👨‍🍳
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Preparing</h3>
+                    <p class="text-sm text-gray-600">15-20 mins</p>
+                    <p class="text-xs text-yellow-600 font-semibold mt-1">In Progress</p>
+                </div>
+                
+                <!-- Step 3: Out for Delivery -->
+                <div class="timeline-step flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-2xl relative z-10 mb-4">
+                        🚚
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Out for Delivery</h3>
+                    <p class="text-sm text-gray-600">10-15 mins</p>
+                    <p class="text-xs text-gray-500 font-semibold mt-1">Pending</p>
+                </div>
+                
+                <!-- Step 4: Delivered -->
+                <div class="timeline-step flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-2xl relative z-10 mb-4">
+                        🎉
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Delivered</h3>
+                    <p class="text-sm text-gray-600">Total: 25-35 mins</p>
+                    <p class="text-xs text-gray-500 font-semibold mt-1">Pending</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Details -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <!-- Order Items -->
+                <div class="lg:col-span-2">
+                    <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-right">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-dark flex items-center">
+                                🛍️ Order Items
+                                <span class="ml-3 text-sm bg-primary text-white px-3 py-1 rounded-full">{{ order.items.count }}</span>
+                            </h2>
+                        </div>
+                        
+                        <div class="p-6">
+                            {% for item in order.items.all %}
+                            <div class="order-item flex items-center space-x-4 p-4 border border-gray-100 rounded-2xl mb-4">
+                                <!-- Product Image -->
+                                <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white text-xl">
+                                            🍲
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Product Details -->
+                                <div class="flex-grow">
+                                    <h3 class="font-bold text-lg text-dark">{{ item.product.name }}</h3>
+                                    <p class="text-gray-600 text-sm">{{ item.product.category.name }}</p>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="text-sm text-gray-500">{{ item.quantity }}x {{ item.unit_price|floatformat:0 }} FCFA</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Item Total -->
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-primary">{{ item.total_price|floatformat:0 }} FCFA</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="space-y-8">
+                        <!-- Payment & Delivery Info -->
+                        <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-left">
+                            <div class="p-6 border-b border-gray-200">
+                                <h2 class="text-2xl font-bold text-dark">📋 Order Summary</h2>
+                            </div>
+                            
+                            <div class="p-6 space-y-4">
+                                <!-- Pricing -->
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Subtotal</span>
+                                        <span class="font-semibold">{{ order.total_amount|floatformat:0 }} FCFA</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Delivery Fee</span>
+                                        <span class="font-semibold">{{ order.delivery_fee|floatformat:0 }} FCFA</span>
+                                    </div>
+                                    <hr class="border-gray-300">
+                                    <div class="flex justify-between items-center text-2xl font-bold">
+                                        <span class="text-dark">Total</span>
+                                        <span class="price-highlight">{{ order.total_amount|add:order.delivery_fee|floatformat:0 }} FCFA</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Method -->
+                                <div class="bg-gray-50 p-4 rounded-xl">
+                                    <h4 class="font-semibold text-dark mb-2">Payment Method</h4>
+                                    <div class="flex items-center space-x-2">
+                                        {% if order.payment_method == 'whatsapp_contact' %}
+                                            <span class="text-2xl">📱</span>
+                                            <span class="text-green-600 font-semibold">WhatsApp Contact</span>
+                                        {% elif order.payment_method == 'mobile_money' %}
+                                            <span class="text-2xl">📲</span>
+                                            <span class="text-blue-600 font-semibold">Mobile Money</span>
+                                        {% else %}
+                                            <span class="text-2xl">💵</span>
+                                            <span class="text-green-600 font-semibold">Cash on Delivery</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        {% if order.payment_method == 'cash_on_delivery' %}
+                                            Please have exact change ready
+                                        {% else %}
+                                            Payment confirmed
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Information -->
+                        <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-left" data-aos-delay="100">
+                            <div class="p-6 border-b border-gray-200">
+                                <h2 class="text-2xl font-bold text-dark">🏠 Delivery Details</h2>
+                            </div>
+                            
+                            <div class="p-6 space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-dark mb-1">Customer</h4>
+                                    <p class="text-gray-600">{{ order.customer_name }}</p>
+                                    <p class="text-gray-600">{{ order.customer_phone }}</p>
+                                    {% if order.customer_email %}
+                                    <p class="text-gray-600">{{ order.customer_email }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-semibold text-dark mb-1">Delivery Address</h4>
+                                    <p class="text-gray-600">{{ order.customer_location }}</p>
+                                </div>
+                                
+                                {% if order.special_instructions %}
+                                <div>
+                                    <h4 class="font-semibold text-dark mb-1">Special Instructions</h4>
+                                    <p class="text-gray-600 bg-yellow-50 p-3 rounded-lg">{{ order.special_instructions }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="bg-green-50 p-4 rounded-xl">
+                                    <div class="flex items-center space-x-2 text-green-700">
+                                        <svg class="w-5 h-5 animate-truck-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        </svg>
+                                        <span class="font-semibold">Estimated Delivery</span>
+                                    </div>
+                                    <p class="text-green-600 font-bold text-lg mt-1">25-35 minutes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <section class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up">
+                <!-- Track Order -->
+                <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20would%20like%20to%20track%20my%20order%20%23{{ order.order_id }}." class="btn-3d bg-green-500 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-green-600 transition-all flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                    Track Order
+                </a>
+                
+                <!-- Download Receipt -->
+                <a href="{% url 'backend:generate_receipt' order.order_id %}" class="btn-3d bg-primary text-white px-8 py-4 rounded-2xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download Receipt
+                </a>
+                
+                <!-- Order Again -->
+                <a href="{% url 'backend:products' %}" class="btn-3d bg-secondary text-dark px-8 py-4 rounded-2xl font-semibold hover:bg-yellow-400 transition-all flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Order Again
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- What's Next -->
+    <section class="py-20 bg-gradient-to-br from-primary to-green-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="max-w-3xl mx-auto" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">What's Next?</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4 animate-bounce-slow">👨‍🍳</div>
+                        <h3 class="text-xl font-bold mb-2">We're Cooking</h3>
+                        <p class="text-white/90">Our chefs are preparing your order with fresh ingredients and traditional recipes.</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-6xl mb-4 animate-truck-bounce">🚚</div>
+                        <h3 class="text-xl font-bold mb-2">On the Way</h3>
+                        <p class="text-white/90">Your order will be on its way soon. We'll update you via WhatsApp.</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-6xl mb-4 animate-celebration">🎉</div>
+                        <h3 class="text-xl font-bold mb-2">Enjoy!</h3>
+                        <p class="text-white/90">Savor every bite of authentic Cameroonian flavors delivered fresh.</p>
+                    </div>
+                </div>
+                
+                <div class="mt-12 bg-white/20 backdrop-blur-sm rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-4">Need Help?</h3>
+                    <p class="text-white/90 mb-6">Our support team is here to help with any questions about your order.</p>
+                    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20help%20with%20order%20%23{{ order.order_id }}." class="btn-3d bg-white text-primary px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all">
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            🍽️
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2020.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'backend:home' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'backend:products' %}" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="{% url 'backend:catering' %}" class="text-gray-400 hover:text-white transition-colors">Catering</a></li>
+                        <li><a href="{% url 'backend:about' %}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{% url 'backend:contact' %}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Order Support</h4>
+                    <ul class="space-y-3">
+                        <li><span class="text-gray-400">Track Your Order</span></li>
+                        <li><span class="text-gray-400">Order History</span></li>
+                        <li><span class="text-gray-400">Delivery Info</span></li>
+                        <li><span class="text-gray-400">Payment Help</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li>📍 Buea, Southwest Region, Cameroon</li>
+                        <li>📱 +237 6 99 80 82 60</li>
+                        <li>✉️ info@bueadelights.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    © 2025 BueaDelights. All rights reserved. Made with ❤️ in Buea, Cameroon.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20help%20with%20order%20%23{{ order.order_id }}." 
+       class="fixed bottom-8 left-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all z-50 animate-pulse"
+       title="Chat with us on WhatsApp">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
+            }
+        });
+
+        // Create confetti animation
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = ['#228B22', '#FFD700', '#DC143C'][Math.floor(Math.random() * 3)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 100);
+            }
+        }
+
+        // Create confetti on page load
+        window.addEventListener('load', () => {
+            setTimeout(createConfetti, 1000);
+        });
+
+        // Auto-refresh order status (simulated)
+        function updateOrderStatus() {
+            // This would normally check with the server
+            // For demo purposes, we'll simulate progress
+            setTimeout(() => {
+                const preparingStep = document.querySelector('.timeline-step.active');
+                if (preparingStep) {
+                    preparingStep.classList.remove('active');
+                    preparingStep.classList.add('completed');
+                    preparingStep.querySelector('.w-16').innerHTML = '✓';
+                    preparingStep.querySelector('.w-16').classList.add('bg-primary');
+                    preparingStep.querySelector('.w-16').classList.remove('bg-secondary');
+                    preparingStep.querySelector('.text-xs').textContent = 'Completed';
+                    preparingStep.querySelector('.text-xs').classList.remove('text-yellow-600');
+                    preparingStep.querySelector('.text-xs').classList.add('text-green-600');
+                    
+                    // Activate next step
+                    const nextStep = preparingStep.nextElementSibling;
+                    if (nextStep) {
+                        nextStep.classList.add('active');
+                        nextStep.querySelector('.w-16').classList.add('bg-secondary', 'animate-pulse-slow');
+                        nextStep.querySelector('.w-16').classList.remove('bg-gray-200');
+                        nextStep.querySelector('.text-xs').textContent = 'In Progress';
+                        nextStep.querySelector('.text-xs').classList.remove('text-gray-500');
+                        nextStep.querySelector('.text-xs').classList.add('text-yellow-600');
+                    }
+                }
+            }, 10000); // Update after 10 seconds for demo
+        }
+
+        // Start status updates
+        updateOrderStatus();
+
+        // Save order to local storage for offline access (PWA feature)
+        const orderData = {
+            orderId: '{{ order.order_id }}',
+            customerName: '{{ order.customer_name|escapejs }}',
+            totalAmount: '{{ order.total_amount|add:order.delivery_fee|floatformat:0 }}',
+            timestamp: Date.now()
+        };
+        localStorage.setItem('lastOrder', JSON.stringify(orderData));
+    </script>
+</body>
+</html>

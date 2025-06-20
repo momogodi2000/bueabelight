@@ -1,0 +1,781 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - BueaDelights</title>
+    <meta name="description" content="Complete your order for authentic Cameroonian dishes. Safe and secure checkout with multiple payment options.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out',
+                        'shake': 'shake 0.5s ease-in-out'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 139, 34, 0.1);
+        }
+        
+        .payment-method {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .payment-method:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .payment-method.selected {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(34, 139, 34, 0.3);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .checkout-step {
+            position: relative;
+        }
+        
+        .checkout-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: 1;
+        }
+        
+        .checkout-step.completed::after {
+            background: var(--primary);
+        }
+        
+        .checkout-step:last-child::after {
+            display: none;
+        }
+        
+        .price-highlight {
+            background: linear-gradient(45deg, var(--secondary), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .order-summary-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-3px) scale(1.01);
+            }
+            
+            .form-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-primary shadow-lg transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-secondary to-yellow-300 rounded-full flex items-center justify-center text-dark font-bold text-lg">
+                        🚀
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'backend:home' %}" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="{% url 'backend:products' %}" class="text-white hover:text-secondary transition-colors">Menu</a>
+                    <a href="{% url 'backend:cart' %}" class="text-white hover:text-secondary transition-colors">Cart</a>
+                    <span class="text-secondary font-semibold">Checkout</span>
+                    <a href="{% url 'backend:admin_login' %}" class="text-white hover:text-secondary transition-colors text-sm">
+                        Admin
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden bg-primary/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'backend:home' %}" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="{% url 'backend:products' %}" class="block px-3 py-2 text-white hover:text-secondary">Menu</a>
+                <a href="{% url 'backend:cart' %}" class="block px-3 py-2 text-white hover:text-secondary">Cart</a>
+                <span class="block px-3 py-2 text-secondary font-semibold">Checkout</span>
+                <a href="{% url 'backend:admin_login' %}" class="block px-3 py-2 text-white hover:text-secondary">Admin Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-16 pb-12 text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-8" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-display font-bold mb-6">
+                    <span class="price-highlight">Secure Checkout</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100">
+                    Almost there! Complete your order and enjoy delicious Cameroonian flavors delivered to your doorstep.
+                </p>
+            </div>
+            
+            <!-- Checkout Steps -->
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex justify-center items-center space-x-8 mb-8">
+                    <div class="checkout-step completed flex flex-col items-center">
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary font-bold text-lg relative z-10">
+                            ✓
+                        </div>
+                        <span class="text-sm mt-2 font-semibold">Cart</span>
+                    </div>
+                    <div class="checkout-step flex flex-col items-center">
+                        <div class="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-dark font-bold text-lg relative z-10">
+                            2
+                        </div>
+                        <span class="text-sm mt-2 font-semibold">Checkout</span>
+                    </div>
+                    <div class="checkout-step flex flex-col items-center">
+                        <div class="w-12 h-12 bg-white/20 border-2 border-white rounded-full flex items-center justify-center text-white font-bold text-lg relative z-10">
+                            3
+                        </div>
+                        <span class="text-sm mt-2">Confirmation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Checkout Form -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <form method="POST" id="checkout-form">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <!-- Customer Information -->
+                    <div class="lg:col-span-2">
+                        <div class="space-y-8">
+                            <!-- Contact Information -->
+                            <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-right">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h2 class="text-2xl font-bold text-dark flex items-center">
+                                        📞 Contact Information
+                                    </h2>
+                                </div>
+                                <div class="p-6 space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="customer_name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Full Name *
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                id="customer_name" 
+                                                name="customer_name" 
+                                                required
+                                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                placeholder="Enter your full name"
+                                                value="{{ form.customer_name.value|default:'' }}"
+                                            >
+                                            {% if form.customer_name.errors %}
+                                                <p class="text-red-500 text-sm mt-1">{{ form.customer_name.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <label for="customer_phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Phone Number *
+                                            </label>
+                                            <input 
+                                                type="tel" 
+                                                id="customer_phone" 
+                                                name="customer_phone" 
+                                                required
+                                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                placeholder="+237 6XX XXX XXX"
+                                                value="{{ form.customer_phone.value|default:'' }}"
+                                            >
+                                            {% if form.customer_phone.errors %}
+                                                <p class="text-red-500 text-sm mt-1">{{ form.customer_phone.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="customer_email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Email Address (Optional)
+                                        </label>
+                                        <input 
+                                            type="email" 
+                                            id="customer_email" 
+                                            name="customer_email"
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            placeholder="your.email@example.com"
+                                            value="{{ form.customer_email.value|default:'' }}"
+                                        >
+                                        {% if form.customer_email.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.customer_email.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Information -->
+                            <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-right" data-aos-delay="100">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h2 class="text-2xl font-bold text-dark flex items-center">
+                                        🏠 Delivery Information
+                                    </h2>
+                                </div>
+                                <div class="p-6 space-y-6">
+                                    <div>
+                                        <label for="customer_location" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Delivery Address *
+                                        </label>
+                                        <textarea 
+                                            id="customer_location" 
+                                            name="customer_location" 
+                                            required
+                                            rows="3"
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            placeholder="Enter your complete delivery address including landmarks..."
+                                        >{{ form.customer_location.value|default:'' }}</textarea>
+                                        {% if form.customer_location.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.customer_location.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label for="special_instructions" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Special Instructions (Optional)
+                                        </label>
+                                        <textarea 
+                                            id="special_instructions" 
+                                            name="special_instructions"
+                                            rows="3"
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            placeholder="Any special requests for your order..."
+                                        >{{ form.special_instructions.value|default:'' }}</textarea>
+                                        {% if form.special_instructions.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.special_instructions.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-right" data-aos-delay="200">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h2 class="text-2xl font-bold text-dark flex items-center">
+                                        💳 Payment Method
+                                    </h2>
+                                </div>
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- WhatsApp Contact -->
+                                        <div class="payment-method border-2 border-gray-200 rounded-xl p-6 text-center" data-method="whatsapp_contact">
+                                            <div class="text-4xl mb-3">📱</div>
+                                            <h3 class="font-bold mb-2">WhatsApp</h3>
+                                            <p class="text-sm text-gray-600 mb-3">Contact via WhatsApp for order confirmation</p>
+                                            <div class="text-green-600 font-semibold">Free</div>
+                                        </div>
+                                        
+                                        <!-- Mobile Money -->
+                                        <div class="payment-method border-2 border-gray-200 rounded-xl p-6 text-center" data-method="mobile_money">
+                                            <div class="text-4xl mb-3">📲</div>
+                                            <h3 class="font-bold mb-2">Mobile Money</h3>
+                                            <p class="text-sm text-gray-600 mb-3">MTN Mobile Money / Orange Money</p>
+                                            <div class="text-blue-600 font-semibold">Secure</div>
+                                        </div>
+                                        
+                                        <!-- Cash on Delivery -->
+                                        <div class="payment-method border-2 border-gray-200 rounded-xl p-6 text-center" data-method="cash_on_delivery">
+                                            <div class="text-4xl mb-3">💵</div>
+                                            <h3 class="font-bold mb-2">Cash on Delivery</h3>
+                                            <p class="text-sm text-gray-600 mb-3">Pay when your order arrives</p>
+                                            <div class="text-green-600 font-semibold">Convenient</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="payment_method" id="payment_method" required>
+                                    {% if form.payment_method.errors %}
+                                        <p class="text-red-500 text-sm mt-4">{{ form.payment_method.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Summary -->
+                    <div class="lg:col-span-1">
+                        <div class="order-summary-card rounded-3xl shadow-xl overflow-hidden sticky top-24" data-aos="fade-left">
+                            <div class="p-6 border-b border-gray-200">
+                                <h2 class="text-2xl font-bold text-dark flex items-center">
+                                    📋 Order Summary
+                                </h2>
+                            </div>
+                            
+                            <div class="p-6">
+                                <!-- Order Items -->
+                                <div class="space-y-4 mb-6">
+                                    {% for item in cart_items %}
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                                        <div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                                            {% else %}
+                                                <div class="w-full h-full bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white text-lg">
+                                                    🍲
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow">
+                                            <h4 class="font-semibold text-sm">{{ item.product.name }}</h4>
+                                            <p class="text-xs text-gray-600">{{ item.quantity }}x {{ item.price|floatformat:0 }} FCFA</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-bold text-primary">{{ item.total|floatformat:0 }} FCFA</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Pricing Breakdown -->
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Subtotal</span>
+                                        <span class="font-semibold">{{ cart_total|floatformat:0 }} FCFA</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Delivery Fee</span>
+                                        <span class="font-semibold">{{ delivery_fee|floatformat:0 }} FCFA</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-green-600">
+                                        <span>Discount</span>
+                                        <span class="font-semibold">0 FCFA</span>
+                                    </div>
+                                    <hr class="border-gray-300">
+                                    <div class="flex justify-between items-center text-2xl font-bold">
+                                        <span class="text-dark">Total</span>
+                                        <span class="price-highlight">{{ grand_total|floatformat:0 }} FCFA</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Estimated Delivery -->
+                                <div class="bg-green-50 p-4 rounded-xl mb-6">
+                                    <div class="flex items-center space-x-2 text-green-700">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="font-semibold">Estimated Delivery</span>
+                                    </div>
+                                    <p class="text-green-600 font-bold text-lg mt-1">25-35 minutes</p>
+                                </div>
+                                
+                                <!-- Place Order Button -->
+                                <button type="submit" id="place-order-btn" class="btn-3d w-full bg-primary text-white px-8 py-4 rounded-full font-bold hover:bg-green-700 transition-all">
+                                    🚀 Place Order
+                                </button>
+                                
+                                <!-- Security Notice -->
+                                <div class="mt-6 text-center">
+                                    <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m4-6V9a4 4 0 00-8 0v2a2 2 0 002 2h8a2 2 0 002-2z"></path>
+                                        </svg>
+                                        <span>Secure & Safe Checkout</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            🍽️
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2020.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'backend:home' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'backend:products' %}" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="{% url 'backend:catering' %}" class="text-gray-400 hover:text-white transition-colors">Catering</a></li>
+                        <li><a href="{% url 'backend:about' %}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{% url 'backend:contact' %}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Payment Methods</h4>
+                    <ul class="space-y-3">
+                        <li><span class="text-gray-400">WhatsApp Contact</span></li>
+                        <li><span class="text-gray-400">MTN Mobile Money</span></li>
+                        <li><span class="text-gray-400">Orange Money</span></li>
+                        <li><span class="text-gray-400">Cash on Delivery</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li>📍 Buea, Southwest Region, Cameroon</li>
+                        <li>📱 +237 6 99 80 82 60</li>
+                        <li>✉️ info@bueadelights.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    © 2025 BueaDelights. All rights reserved. Made with ❤️ in Buea, Cameroon.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20help%20with%20checkout." 
+       class="fixed bottom-8 left-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all z-50 animate-pulse"
+       title="Chat with us on WhatsApp">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
+            }
+        });
+
+        // Payment method selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            const paymentMethodInput = document.getElementById('payment_method');
+            
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    // Remove selected class from all methods
+                    paymentMethods.forEach(m => m.classList.remove('selected'));
+                    
+                    // Add selected class to clicked method
+                    this.classList.add('selected');
+                    
+                    // Set the hidden input value
+                    paymentMethodInput.value = this.dataset.method;
+                });
+            });
+        });
+
+        // Form validation and submission
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            const paymentMethod = document.getElementById('payment_method').value;
+            
+            if (!paymentMethod) {
+                e.preventDefault();
+                alert('Please select a payment method');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('place-order-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
+            submitBtn.disabled = true;
+            
+            // Re-enable button after a delay in case of error
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 10000);
+        });
+
+        // Auto-format phone number
+        document.getElementById('customer_phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            if (value.length > 0) {
+                if (value.startsWith('237')) {
+                    // Already has country code
+                    if (value.length > 12) value = value.substring(0, 12);
+                    value = '+' + value.substring(0, 3) + ' ' + value.substring(3, 4) + ' ' + 
+                           value.substring(4, 6) + ' ' + value.substring(6, 8) + ' ' + 
+                           value.substring(8, 10) + ' ' + value.substring(10);
+                } else if (value.startsWith('6') && value.length >= 9) {
+                    // Cameroon mobile number without country code
+                    if (value.length > 9) value = value.substring(0, 9);
+                    value = '+237 ' + value.substring(0, 1) + ' ' + value.substring(1, 3) + ' ' + 
+                           value.substring(3, 5) + ' ' + value.substring(5, 7) + ' ' + value.substring(7);
+                }
+            }
+            
+            e.target.value = value;
+        });
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm animate-fade-in-down ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Save form data for PWA offline support
+        function saveFormData() {
+            const formData = {
+                customer_name: document.getElementById('customer_name').value,
+                customer_phone: document.getElementById('customer_phone').value,
+                customer_email: document.getElementById('customer_email').value,
+                customer_location: document.getElementById('customer_location').value,
+                special_instructions: document.getElementById('special_instructions').value,
+                payment_method: document.getElementById('payment_method').value,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('checkoutFormData', JSON.stringify(formData));
+        }
+
+        // Load saved form data
+        function loadFormData() {
+            const savedData = localStorage.getItem('checkoutFormData');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                
+                // Only load if data is less than 24 hours old
+                if (Date.now() - formData.timestamp < 24 * 60 * 60 * 1000) {
+                    document.getElementById('customer_name').value = formData.customer_name || '';
+                    document.getElementById('customer_phone').value = formData.customer_phone || '';
+                    document.getElementById('customer_email').value = formData.customer_email || '';
+                    document.getElementById('customer_location').value = formData.customer_location || '';
+                    document.getElementById('special_instructions').value = formData.special_instructions || '';
+                    
+                    if (formData.payment_method) {
+                        const paymentMethod = document.querySelector(`[data-method="${formData.payment_method}"]`);
+                        if (paymentMethod) {
+                            paymentMethod.click();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Auto-save form data as user types
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFormData();
+            
+            const formInputs = document.querySelectorAll('input, textarea, select');
+            formInputs.forEach(input => {
+                input.addEventListener('change', saveFormData);
+            });
+        });
+    </script>
+</body>
+</html>

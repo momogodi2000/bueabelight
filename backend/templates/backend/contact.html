@@ -1,0 +1,834 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - BueaDelights</title>
+    <meta name="description" content="Get in touch with BueaDelights. We're here to help with orders, questions, and feedback. Multiple ways to reach us including WhatsApp.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'ring': 'ring 2s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-10px) rotateX(2deg) rotateY(2deg) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 139, 34, 0.1);
+        }
+        
+        .contact-method {
+            transition: all 0.4s ease;
+        }
+        
+        .contact-method:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .contact-method:hover .contact-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        .contact-icon {
+            transition: all 0.4s ease;
+        }
+        
+        .price-highlight {
+            background: linear-gradient(45deg, var(--secondary), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .faq-item {
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            background: #f9fafb;
+            transform: translateX(5px);
+        }
+        
+        .map-container {
+            background: linear-gradient(135deg, rgba(34, 139, 34, 0.1), rgba(255, 215, 0, 0.1));
+            border-radius: 24px;
+            padding: 2rem;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+            
+            .contact-method:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+            
+            .form-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        🍽️
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'backend:home' %}" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="{% url 'backend:products' %}" class="text-white hover:text-secondary transition-colors">Menu</a>
+                    <a href="{% url 'backend:catering' %}" class="text-white hover:text-secondary transition-colors">Catering</a>
+                    <a href="{% url 'backend:about' %}" class="text-white hover:text-secondary transition-colors">About</a>
+                    <a href="{% url 'backend:contact' %}" class="text-secondary font-semibold">Contact</a>
+                    
+                    <!-- Cart Icon -->
+                    <a href="{% url 'backend:cart' %}" class="relative text-white hover:text-secondary transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m12.5 6v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center cart-count">{{ cart_count|default:0 }}</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_login' %}" class="text-white hover:text-secondary transition-colors text-sm">
+                        Admin
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden glass-effect" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'backend:home' %}" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="{% url 'backend:products' %}" class="block px-3 py-2 text-white hover:text-secondary">Menu</a>
+                <a href="{% url 'backend:catering' %}" class="block px-3 py-2 text-white hover:text-secondary">Catering</a>
+                <a href="{% url 'backend:about' %}" class="block px-3 py-2 text-white hover:text-secondary">About</a>
+                <a href="{% url 'backend:contact' %}" class="block px-3 py-2 text-secondary font-semibold">Contact</a>
+                <a href="{% url 'backend:cart' %}" class="block px-3 py-2 text-white hover:text-secondary">
+                    🛒 Cart ({{ cart_count|default:0 }})
+                </a>
+                <a href="{% url 'backend:admin_login' %}" class="block px-3 py-2 text-white hover:text-secondary">Admin Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-16 pb-12 text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-display font-bold mb-6">
+                    Get In <span class="price-highlight">Touch</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100">
+                    We'd love to hear from you! Whether you have questions, feedback, or need help with your order, we're here to assist you 24/7.
+                </p>
+                
+                <!-- Quick Contact Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+                    <div class="glass-effect rounded-2xl p-6">
+                        <div class="text-4xl mb-3 animate-ring">📱</div>
+                        <div class="text-2xl font-bold text-secondary mb-2">< 5 min</div>
+                        <div class="text-lg text-gray-200">WhatsApp Response</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <div class="text-4xl mb-3 animate-pulse-slow">📧</div>
+                        <div class="text-2xl font-bold text-secondary mb-2">< 24 hrs</div>
+                        <div class="text-lg text-gray-200">Email Response</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6">
+                        <div class="text-4xl mb-3 animate-bounce-slow">🕒</div>
+                        <div class="text-2xl font-bold text-secondary mb-2">8AM - 10PM</div>
+                        <div class="text-lg text-gray-200">Service Hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Methods -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Multiple Ways to <span class="price-highlight">Reach Us</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Choose the method that works best for you. We're available through multiple channels to provide the support you need.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- WhatsApp -->
+                <div class="contact-method bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="contact-icon w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-6">
+                        📱
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-4">WhatsApp</h3>
+                    <p class="text-gray-600 mb-6">Get instant support and place orders directly through WhatsApp.</p>
+                    <div class="text-lg font-semibold text-green-600 mb-4">+237 6 99 80 82 60</div>
+                    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20assistance." class="btn-3d bg-green-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600 transition-all">
+                        Chat Now
+                    </a>
+                </div>
+                
+                <!-- Phone -->
+                <div class="contact-method bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="contact-icon w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-6">
+                        📞
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-4">Phone Call</h3>
+                    <p class="text-gray-600 mb-6">Speak directly with our customer service team for personalized assistance.</p>
+                    <div class="text-lg font-semibold text-blue-600 mb-4">+237 6 99 80 82 60</div>
+                    <a href="tel:+237699808260" class="btn-3d bg-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-600 transition-all">
+                        Call Now
+                    </a>
+                </div>
+                
+                <!-- Email -->
+                <div class="contact-method bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="contact-icon w-20 h-20 bg-accent rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-6">
+                        ✉️
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-4">Email</h3>
+                    <p class="text-gray-600 mb-6">Send us detailed messages and receive comprehensive responses within 24 hours.</p>
+                    <div class="text-lg font-semibold text-red-600 mb-4">info@bueadelights.com</div>
+                    <a href="mailto:info@bueadelights.com" class="btn-3d bg-accent text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition-all">
+                        Send Email
+                    </a>
+                </div>
+                
+                <!-- Visit Us -->
+                <div class="contact-method bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="contact-icon w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-6">
+                        📍
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-4">Visit Us</h3>
+                    <p class="text-gray-600 mb-6">Come to our location in Buea for a face-to-face consultation and fresh orders.</p>
+                    <div class="text-lg font-semibold text-primary mb-4">Buea, Southwest Region</div>
+                    <button onclick="showMap()" class="btn-3d bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition-all">
+                        Get Directions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <!-- Contact Form -->
+                <div data-aos="fade-right">
+                    <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden">
+                        <div class="p-8">
+                            <h2 class="text-3xl font-bold text-dark mb-6">Send Us a Message</h2>
+                            <p class="text-gray-600 mb-8">Fill out the form below and we'll get back to you as soon as possible. All fields marked with * are required.</p>
+                            
+                            <form method="POST" id="contact-form">
+                                {% csrf_token %}
+                                <div class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Your Name *
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                id="name" 
+                                                name="name" 
+                                                required
+                                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                placeholder="Enter your full name"
+                                                value="{{ form.name.value|default:'' }}"
+                                            >
+                                            {% if form.name.errors %}
+                                                <p class="text-red-500 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Phone Number *
+                                            </label>
+                                            <input 
+                                                type="tel" 
+                                                id="phone" 
+                                                name="phone" 
+                                                required
+                                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                placeholder="+237 6XX XXX XXX"
+                                                value="{{ form.phone.value|default:'' }}"
+                                            >
+                                            {% if form.phone.errors %}
+                                                <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Email Address *
+                                        </label>
+                                        <input 
+                                            type="email" 
+                                            id="email" 
+                                            name="email" 
+                                            required
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            placeholder="your.email@example.com"
+                                            value="{{ form.email.value|default:'' }}"
+                                        >
+                                        {% if form.email.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="subject" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Subject *
+                                        </label>
+                                        <select 
+                                            id="subject" 
+                                            name="subject" 
+                                            required
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        >
+                                            <option value="">Select a subject</option>
+                                            <option value="general_inquiry" {% if form.subject.value == 'general_inquiry' %}selected{% endif %}>General Inquiry</option>
+                                            <option value="order_support" {% if form.subject.value == 'order_support' %}selected{% endif %}>Order Support</option>
+                                            <option value="catering_request" {% if form.subject.value == 'catering_request' %}selected{% endif %}>Catering Request</option>
+                                            <option value="feedback" {% if form.subject.value == 'feedback' %}selected{% endif %}>Feedback & Suggestions</option>
+                                            <option value="partnership" {% if form.subject.value == 'partnership' %}selected{% endif %}>Partnership Opportunity</option>
+                                            <option value="complaint" {% if form.subject.value == 'complaint' %}selected{% endif %}>Complaint</option>
+                                            <option value="other" {% if form.subject.value == 'other' %}selected{% endif %}>Other</option>
+                                        </select>
+                                        {% if form.subject.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.subject.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="message" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Your Message *
+                                        </label>
+                                        <textarea 
+                                            id="message" 
+                                            name="message" 
+                                            required
+                                            rows="5"
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            placeholder="Please provide as much detail as possible..."
+                                        >{{ form.message.value|default:'' }}</textarea>
+                                        {% if form.message.errors %}
+                                            <p class="text-red-500 text-sm mt-1">{{ form.message.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <button type="submit" id="submit-btn" class="btn-3d w-full bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-green-700 transition-all">
+                                        📤 Send Message
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Info & Map -->
+                <div class="space-y-8" data-aos="fade-left">
+                    <!-- Contact Information -->
+                    <div class="card-3d bg-white rounded-3xl shadow-xl p-8">
+                        <h3 class="text-2xl font-bold text-dark mb-6">Contact Information</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-dark">Our Location</h4>
+                                    <p class="text-gray-600">Buea, Southwest Region, Cameroon</p>
+                                    <p class="text-sm text-gray-500 mt-1">We deliver throughout Buea and surrounding areas</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-dark">WhatsApp & Phone</h4>
+                                    <p class="text-gray-600">+237 6 99 80 82 60</p>
+                                    <p class="text-sm text-gray-500 mt-1">Available 8:00 AM - 10:00 PM daily</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-dark">Email Address</h4>
+                                    <p class="text-gray-600">info@bueadelights.com</p>
+                                    <p class="text-sm text-gray-500 mt-1">We respond within 24 hours</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-dark">Operating Hours</h4>
+                                    <p class="text-gray-600">Monday - Sunday</p>
+                                    <p class="text-sm text-gray-500 mt-1">8:00 AM - 10:00 PM</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Map -->
+                    <div class="map-container">
+                        <h3 class="text-2xl font-bold text-dark mb-6">Find Us in Buea</h3>
+                        <div class="bg-white rounded-2xl p-8 text-center">
+                            <div class="text-6xl mb-4">🗺️</div>
+                            <h4 class="text-xl font-bold text-dark mb-4">Interactive Map Coming Soon</h4>
+                            <p class="text-gray-600 mb-6">We're working on integrating a detailed map to help you find us easily. For now, contact us for specific directions to our location in Buea.</p>
+                            <button onclick="getDirections()" class="btn-3d bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                📍 Get Directions via WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+                    Frequently Asked <span class="price-highlight">Questions</span>
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Quick answers to common questions. Can't find what you're looking for? Contact us directly!
+                </p>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- FAQ Item 1 -->
+                <div class="faq-item bg-gray-50 rounded-2xl p-6" data-aos="fade-up" data-aos-delay="100">
+                    <h3 class="text-xl font-bold text-dark mb-3">How long does delivery take?</h3>
+                    <p class="text-gray-600">Our average delivery time is 25-35 minutes within Buea. During peak hours, it might take up to 45 minutes. We'll always keep you updated via WhatsApp.</p>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="faq-item bg-gray-50 rounded-2xl p-6" data-aos="fade-up" data-aos-delay="200">
+                    <h3 class="text-xl font-bold text-dark mb-3">What payment methods do you accept?</h3>
+                    <p class="text-gray-600">We accept mobile money (MTN and Orange), cash on delivery, and you can also contact us via WhatsApp to arrange payment. All methods are secure and convenient.</p>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="faq-item bg-gray-50 rounded-2xl p-6" data-aos="fade-up" data-aos-delay="300">
+                    <h3 class="text-xl font-bold text-dark mb-3">Do you offer catering services?</h3>
+                    <p class="text-gray-600">Yes! We provide catering services for weddings, corporate events, parties, and other special occasions. Contact us at least 48 hours in advance to discuss your needs.</p>
+                </div>
+                
+                <!-- FAQ Item 4 -->
+                <div class="faq-item bg-gray-50 rounded-2xl p-6" data-aos="fade-up" data-aos-delay="400">
+                    <h3 class="text-xl font-bold text-dark mb-3">Can I modify or cancel my order?</h3>
+                    <p class="text-gray-600">You can modify or cancel your order within 5 minutes of placing it by contacting us immediately on WhatsApp. After preparation begins, modifications may not be possible.</p>
+                </div>
+                
+                <!-- FAQ Item 5 -->
+                <div class="faq-item bg-gray-50 rounded-2xl p-6" data-aos="fade-up" data-aos-delay="500">
+                    <h3 class="text-xl font-bold text-dark mb-3">Do you accommodate dietary restrictions?</h3>
+                    <p class="text-gray-600">We can accommodate many dietary preferences and restrictions. Please mention any allergies or special requirements when placing your order, and we'll do our best to help.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            🍽️
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2020. Always here to serve you better.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'backend:home' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'backend:products' %}" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="{% url 'backend:catering' %}" class="text-gray-400 hover:text-white transition-colors">Catering</a></li>
+                        <li><a href="{% url 'backend:about' %}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{% url 'backend:contact' %}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Support</h4>
+                    <ul class="space-y-3">
+                        <li><span class="text-gray-400">Order Tracking</span></li>
+                        <li><span class="text-gray-400">Delivery Info</span></li>
+                        <li><span class="text-gray-400">Payment Help</span></li>
+                        <li><span class="text-gray-400">FAQ</span></li>
+                        <li><span class="text-gray-400">Customer Care</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li>📍 Buea, Southwest Region, Cameroon</li>
+                        <li>📱 +237 6 99 80 82 60</li>
+                        <li>✉️ info@bueadelights.com</li>
+                        <li>🕒 8:00 AM - 10:00 PM Daily</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    © 2025 BueaDelights. All rights reserved. Made with ❤️ in Buea, Cameroon.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I%20need%20assistance." 
+       class="fixed bottom-8 left-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all z-50 animate-pulse"
+       title="Chat with us on WhatsApp">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
+            }
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('shadow-lg');
+                navbar.classList.add('bg-primary');
+                navbar.classList.remove('glass-effect');
+            } else {
+                navbar.classList.remove('shadow-lg');
+                navbar.classList.remove('bg-primary');
+                navbar.classList.add('glass-effect');
+            }
+        });
+
+        // Form submission
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<div class="loading-spinner"></div> Sending...';
+            submitBtn.disabled = true;
+            
+            // Re-enable button after submission (Django will handle redirect)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+
+        // Auto-format phone number
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            if (value.length > 0) {
+                if (value.startsWith('237')) {
+                    // Already has country code
+                    if (value.length > 12) value = value.substring(0, 12);
+                    value = '+' + value.substring(0, 3) + ' ' + value.substring(3, 4) + ' ' + 
+                           value.substring(4, 6) + ' ' + value.substring(6, 8) + ' ' + 
+                           value.substring(8, 10) + ' ' + value.substring(10);
+                } else if (value.startsWith('6') && value.length >= 9) {
+                    // Cameroon mobile number without country code
+                    if (value.length > 9) value = value.substring(0, 9);
+                    value = '+237 ' + value.substring(0, 1) + ' ' + value.substring(1, 3) + ' ' + 
+                           value.substring(3, 5) + ' ' + value.substring(5, 7) + ' ' + value.substring(7);
+                }
+            }
+            
+            e.target.value = value;
+        });
+
+        // Map functions
+        function showMap() {
+            alert('Interactive map feature coming soon! For now, please contact us via WhatsApp for directions.');
+        }
+
+        function getDirections() {
+            const message = 'Hello BueaDelights! I would like to get directions to your location in Buea.';
+            const whatsappUrl = `https://wa.me/237699808260?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Save form data for PWA offline support
+        function saveFormData() {
+            const formData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('contactFormData', JSON.stringify(formData));
+        }
+
+        // Load saved form data
+        function loadFormData() {
+            const savedData = localStorage.getItem('contactFormData');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                
+                // Only load if data is less than 24 hours old
+                if (Date.now() - formData.timestamp < 24 * 60 * 60 * 1000) {
+                    document.getElementById('name').value = formData.name || '';
+                    document.getElementById('phone').value = formData.phone || '';
+                    document.getElementById('email').value = formData.email || '';
+                    document.getElementById('subject').value = formData.subject || '';
+                    document.getElementById('message').value = formData.message || '';
+                }
+            }
+        }
+
+        // Auto-save form data as user types
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFormData();
+            
+            const formInputs = document.querySelectorAll('#contact-form input, #contact-form textarea, #contact-form select');
+            formInputs.forEach(input => {
+                input.addEventListener('change', saveFormData);
+                input.addEventListener('input', saveFormData);
+            });
+        });
+
+        // Contact method interactions
+        document.querySelectorAll('.contact-method').forEach(method => {
+            method.addEventListener('mouseenter', () => {
+                method.style.transform = 'translateY(-10px) scale(1.05)';
+            });
+            
+            method.addEventListener('mouseleave', () => {
+                method.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,393 +1,662 @@
-<!-- backend/templates/backend/products.html -->
-{% extends 'base.html' %}
 {% load static %}
-{% load cart_tags %}
-
-{% block title %}Our Menu - BueaDelights{% endblock %}
-
-{% block meta_description %}
-Discover our delicious menu of authentic Cameroonian dishes. Fresh, traditional cuisine delivered to your doorstep in Buea.
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .filter-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if search_query %}Search Results for "{{ search_query }}"{% elif category %}{{ category.name }}{% else %}Our Menu{% endif %} - BueaDelights</title>
+    <meta name="description" content="Browse our complete menu of authentic Cameroonian dishes. Fresh ingredients, traditional recipes, delivered hot to your doorstep in Buea.">
     
-    .product-card {
-        transition: all 0.3s ease;
-    }
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
     
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    .price-badge {
-        background: linear-gradient(135deg, #228B22, #32CD32);
-    }
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'rotate-slow': 'rotateY 10s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
     
-    .search-input:focus {
-        box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<!-- Page Header -->
-<section class="bg-gradient-to-r from-forest-green to-green-600 text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-            <h1 class="text-4xl md:text-5xl font-playfair font-bold mb-4">
-                Our Delicious Menu
-            </h1>
-            <p class="text-xl text-green-100 max-w-2xl mx-auto">
-                Discover authentic Cameroonian flavors crafted with love and traditional recipes. 
-                Each dish tells a story of our rich culinary heritage.
-            </p>
-        </div>
-    </div>
-</section>
-
-<!-- Search and Filters -->
-<section class="py-8 bg-white shadow-sm sticky top-16 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <form method="GET" class="flex flex-col lg:flex-row gap-4 items-center">
-            <!-- Search Bar -->
-            <div class="flex-1 w-full lg:max-w-md">
-                <div class="relative">
-                    <input type="text" 
-                           name="q" 
-                           value="{{ current_query }}"
-                           placeholder="Search dishes..." 
-                           class="search-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Category Filter -->
-            <div class="w-full lg:w-auto">
-                <select name="category" class="w-full lg:w-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                    <option value="{{ category.slug }}" {% if current_category == category.slug %}selected{% endif %}>
-                        {{ category.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <!-- Price Filter -->
-            <div class="w-full lg:w-auto">
-                <select name="price_range" class="w-full lg:w-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
-                    <option value="">All Prices</option>
-                    <option value="low" {% if current_price_range == 'low' %}selected{% endif %}>Under 2,000 FCFA</option>
-                    <option value="medium" {% if current_price_range == 'medium' %}selected{% endif %}>2,000 - 5,000 FCFA</option>
-                    <option value="high" {% if current_price_range == 'high' %}selected{% endif %}>Above 5,000 FCFA</option>
-                </select>
-            </div>
-            
-            <!-- Filter Button -->
-            <button type="submit" class="btn btn-primary w-full lg:w-auto px-6 py-3">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/>
-                </svg>
-                Filter
-            </button>
-        </form>
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        <!-- Active Filters Display -->
-        {% if current_query or current_category or current_price_range %}
-        <div class="mt-4 flex flex-wrap gap-2">
-            <span class="text-sm text-gray-600">Active filters:</span>
-            {% if current_query %}
-            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
-                Search: "{{ current_query }}"
-                <a href="{% url 'backend:products' %}?category={{ current_category }}&price_range={{ current_price_range }}" 
-                   class="ml-2 text-white hover:text-gray-200">×</a>
-            </span>
-            {% endif %}
-            {% if current_category %}
-            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
-                Category: {{ categories|first.name }}
-                <a href="{% url 'backend:products' %}?q={{ current_query }}&price_range={{ current_price_range }}" 
-                   class="ml-2 text-white hover:text-gray-200">×</a>
-            </span>
-            {% endif %}
-            {% if current_price_range %}
-            <span class="bg-forest-green text-white px-3 py-1 rounded-full text-sm">
-                Price: {{ current_price_range|title }}
-                <a href="{% url 'backend:products' %}?q={{ current_query }}&category={{ current_category }}" 
-                   class="ml-2 text-white hover:text-gray-200">×</a>
-            </span>
-            {% endif %}
-            <a href="{% url 'backend:products' %}" class="text-warm-red hover:text-red-700 text-sm font-medium">
-                Clear all filters
-            </a>
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(34, 139, 34, 0.95) 0%, 
+                rgba(34, 139, 34, 0.8) 50%, 
+                rgba(220, 20, 60, 0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-10px) rotateX(2deg) rotateY(2deg) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .menu-price {
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover .menu-price {
+            transform: scale(1.1);
+            color: var(--secondary);
+        }
+        
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 139, 34, 0.3);
+        }
+        
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(34, 139, 34, 0.2);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .cart-badge {
+            min-width: 1.25rem;
+            height: 1.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        🍽️
+                    </div>
+                    <span class="text-xl font-bold text-white">BueaDelights</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'backend:home' %}" class="text-white hover:text-secondary transition-colors">Home</a>
+                    <a href="{% url 'backend:products' %}" class="text-secondary font-semibold">Menu</a>
+                    <a href="{% url 'backend:catering' %}" class="text-white hover:text-secondary transition-colors">Catering</a>
+                    <a href="{% url 'backend:about' %}" class="text-white hover:text-secondary transition-colors">About</a>
+                    <a href="{% url 'backend:contact' %}" class="text-white hover:text-secondary transition-colors">Contact</a>
+                    
+                    <!-- Cart Icon -->
+                    <a href="{% url 'backend:cart' %}" class="relative text-white hover:text-secondary transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m12.5 6v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full cart-badge flex items-center justify-center cart-count">{{ cart_count|default:0 }}</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_login' %}" class="text-white hover:text-secondary transition-colors text-sm">
+                        Admin
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
-        {% endif %}
-    </div>
-</section>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden glass-effect" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'backend:home' %}" class="block px-3 py-2 text-white hover:text-secondary">Home</a>
+                <a href="{% url 'backend:products' %}" class="block px-3 py-2 text-secondary font-semibold">Menu</a>
+                <a href="{% url 'backend:catering' %}" class="block px-3 py-2 text-white hover:text-secondary">Catering</a>
+                <a href="{% url 'backend:about' %}" class="block px-3 py-2 text-white hover:text-secondary">About</a>
+                <a href="{% url 'backend:contact' %}" class="block px-3 py-2 text-white hover:text-secondary">Contact</a>
+                <a href="{% url 'backend:cart' %}" class="block px-3 py-2 text-white hover:text-secondary">
+                    🛒 Cart ({{ cart_count|default:0 }})
+                </a>
+                <a href="{% url 'backend:admin_login' %}" class="block px-3 py-2 text-white hover:text-secondary">Admin Login</a>
+            </div>
+        </div>
+    </nav>
 
-<!-- Products Grid -->
-<section class="py-12 bg-neutral-gray">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Results Info -->
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">
-                    {% if current_query %}
-                        Search Results for "{{ current_query }}"
-                    {% elif current_category %}
-                        {{ categories|first.name }} Dishes
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-16 pb-12 text-white relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-secondary opacity-20 rounded-full"></div>
+            <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+            <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-accent opacity-15 rounded-full"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-display font-bold mb-6">
+                    Our <span class="text-gradient bg-gradient-to-r from-secondary to-yellow-300 bg-clip-text text-transparent">Delicious Menu</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-gray-100">
+                    {% if search_query %}
+                        Search results for "{{ search_query }}"
+                    {% elif category %}
+                        {{ category.description|default:"Explore our amazing collection of authentic dishes." }}
                     {% else %}
-                        All Dishes
-                    {% endif %}
-                </h2>
-                <p class="text-gray-600 mt-1">
-                    {% if products %}
-                        Showing {{ products|length }} of {{ paginator.count }} dish{{ paginator.count|pluralize:"es" }}
-                    {% else %}
-                        No dishes found
+                        Explore our complete collection of authentic Cameroonian dishes made with love and fresh local ingredients.
                     {% endif %}
                 </p>
             </div>
             
-            <!-- Sort Options -->
-            <div class="hidden sm:block">
-                <select onchange="location.href='?q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}&sort=' + this.value" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-green focus:border-transparent">
-                    <option value="">Sort by</option>
-                    <option value="name">Name A-Z</option>
-                    <option value="-name">Name Z-A</option>
-                    <option value="price">Price Low-High</option>
-                    <option value="-price">Price High-Low</option>
-                    <option value="-created_at">Newest First</option>
-                </select>
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto mb-8" data-aos="fade-up" data-aos-delay="200">
+                <form method="GET" class="relative">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request.GET.search }}"
+                        placeholder="Search for your favorite dishes..." 
+                        class="search-input w-full px-6 py-4 pl-12 pr-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/70 focus:outline-none focus:border-secondary"
+                    >
+                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-secondary text-dark px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition-all">
+                        Search
+                    </button>
+                </form>
             </div>
         </div>
-        
-        <!-- Products Grid -->
-        {% if products %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {% for product in products %}
-            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                <!-- Product Image -->
-                <div class="aspect-w-16 aspect-h-12 overflow-hidden">
-                    <img src="{{ product.image.url|default:'/static/backend/images/product-default.jpg' }}" 
-                         alt="{{ product.name }}"
-                         class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
-                         loading="lazy">
-                    
-                    <!-- Featured Badge -->
-                    {% if product.is_featured %}
-                    <div class="absolute top-3 left-3">
-                        <span class="bg-golden-yellow text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
-                            ⭐ Featured
-                        </span>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Stock Status -->
-                    {% if not product.is_available %}
-                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold">
-                            Out of Stock
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Product Info -->
-                <div class="p-4">
-                    <!-- Category -->
-                    <div class="text-forest-green text-sm font-medium mb-1">
-                        {{ product.category.name }}
-                    </div>
-                    
-                    <!-- Product Name -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
-                        {{ product.name }}
-                    </h3>
-                    
-                    <!-- Description -->
-                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {{ product.description|truncatewords:20 }}
-                    </p>
-                    
-                    <!-- Price and Action -->
-                    <div class="flex justify-between items-center">
-                        <div class="price-badge text-white px-3 py-1 rounded-lg">
-                            <span class="text-lg font-bold">{{ product.price|floatformat:0 }}</span>
-                            <span class="text-sm">FCFA</span>
+    </section>
+
+    <!-- Filters and Categories -->
+    <section class="py-8 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-4" data-aos="fade-up">
+                <a href="{% url 'backend:products' %}" class="filter-btn px-6 py-3 rounded-full border border-gray-300 hover:border-primary transition-all {% if not request.GET.category %}active{% endif %}">
+                    All Items
+                </a>
+                {% for cat in categories %}
+                <a href="{% url 'backend:category_products' cat.slug %}" class="filter-btn px-6 py-3 rounded-full border border-gray-300 hover:border-primary transition-all {% if request.GET.category == cat.slug %}active{% endif %}">
+                    {{ cat.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {% if products %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {% for product in products %}
+                    <!-- Product Card -->
+                    <div class="menu-item card-3d bg-white rounded-3xl shadow-xl overflow-hidden group" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                        <div class="relative h-64 overflow-hidden">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                            {% else %}
+                                <div class="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 opacity-90"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-8xl">🍲</div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if product.is_featured %}
+                            <div class="absolute top-4 left-4 bg-accent text-white px-3 py-1 rounded-full text-sm font-bold">
+                                Featured
+                            </div>
+                            {% endif %}
+                            
+                            <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                                </svg>
+                            </div>
+                            
+                            {% if not product.is_available %}
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span class="text-white font-bold text-lg">Out of Stock</span>
+                            </div>
+                            {% endif %}
                         </div>
                         
-                        {% if product.is_available %}
-                        <div class="flex space-x-2">
-                            <!-- View Details -->
-                            <a href="{{ product.get_absolute_url }}" 
-                               class="text-forest-green hover:text-green-700 p-2 rounded-lg border border-forest-green hover:bg-forest-green hover:text-white transition-colors"
-                               title="View Details">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </a>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-colors">{{ product.name }}</h3>
+                                <div class="menu-price text-2xl font-bold text-primary transition-all">{{ product.price|floatformat:0 }} FCFA</div>
+                            </div>
+                            <p class="text-gray-600 mb-4 text-sm">{{ product.description|truncatewords:15 }}</p>
                             
-                            <!-- Add to Cart -->
-                            <button class="btn btn-primary add-to-cart px-3 py-2" 
-                                    data-product-id="{{ product.id }}"
-                                    data-product-name="{{ product.name }}"
-                                    data-product-price="{{ product.price }}"
-                                    title="Add to Cart">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0v-2a2 2 0 012-2h5a2 2 0 012 2v2"/>
-                                </svg>
-                            </button>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-1">
+                                    <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                                    <span class="text-sm text-gray-500">({{ product.id|add:25 }})</span>
+                                </div>
+                                <span class="text-sm text-gray-500">{{ product.category.name }}</span>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <a href="{% url 'backend:product_detail' product.slug %}" class="flex-1 btn-3d bg-gray-100 text-dark px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-center">
+                                    View Details
+                                </a>
+                                {% if product.is_available %}
+                                <button class="btn-3d bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition-all add-to-cart" 
+                                        data-product-id="{{ product.id }}"
+                                        data-product-name="{{ product.name }}"
+                                        data-product-price="{{ product.price }}">
+                                    Add to Cart
+                                </button>
+                                {% endif %}
+                            </div>
                         </div>
-                        {% else %}
-                        <span class="text-gray-500 text-sm font-medium">
-                            Unavailable
-                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="mt-16 flex justify-center" data-aos="fade-up">
+                    <nav class="flex items-center space-x-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors">First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors">Previous</a>
                         {% endif %}
+                        
+                        <span class="px-4 py-2 rounded-lg bg-primary text-white font-semibold">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors">Next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors">Last</a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- No Products -->
+                <div class="text-center py-20" data-aos="fade-up">
+                    <div class="text-8xl mb-8">🍽️</div>
+                    <h3 class="text-3xl font-bold text-dark mb-4">
+                        {% if search_query %}
+                            No dishes found for "{{ search_query }}"
+                        {% else %}
+                            No dishes available yet
+                        {% endif %}
+                    </h3>
+                    <p class="text-xl text-gray-600 mb-8">
+                        {% if search_query %}
+                            Try searching for something else or browse our categories.
+                        {% else %}
+                            We're constantly adding new delicious dishes. Check back soon!
+                        {% endif %}
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        {% if search_query %}
+                            <a href="{% url 'backend:products' %}" class="btn-3d bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition-all">
+                                Browse All Menu
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'backend:contact' %}" class="btn-3d bg-secondary text-dark px-8 py-3 rounded-full font-semibold hover:bg-yellow-400 transition-all">
+                            Contact Us
+                        </a>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+            {% endif %}
         </div>
-        
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <div class="mt-12 flex justify-center">
-            <nav class="flex items-center space-x-2">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
-                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                    Previous
-                </a>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="px-3 py-2 rounded-lg bg-forest-green text-white">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
-                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                    {{ num }}
-                </a>
-                {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&q={{ current_query }}&category={{ current_category }}&price_range={{ current_price_range }}" 
-                   class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                    Next
-                </a>
-                {% endif %}
-            </nav>
-        </div>
-        {% endif %}
-        
-        {% else %}
-        <!-- No Products Found -->
-        <div class="text-center py-16">
-            <div class="text-6xl mb-4">🍽️</div>
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">No dishes found</h3>
-            <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                {% if current_query or current_category or current_price_range %}
-                    Sorry, we couldn't find any dishes matching your criteria. 
-                    Try adjusting your filters or search terms.
-                {% else %}
-                    We're currently updating our menu. Please check back soon!
-                {% endif %}
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                {% if current_query or current_category or current_price_range %}
-                <a href="{% url 'backend:products' %}" 
-                   class="btn btn-primary">
-                    View All Dishes
-                </a>
-                {% endif %}
-                <a href="{% url 'backend:contact' %}" 
-                   class="btn btn-outline">
-                    Contact Us
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</section>
+    </section>
 
-<!-- Quick Categories -->
-{% if categories %}
-<section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">
-            Browse by Category
-        </h2>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {% for category in categories %}
-            <a href="{% url 'backend:category_products' category.slug %}" 
-               class="group text-center p-4 rounded-lg border border-gray-200 hover:border-forest-green hover:shadow-md transition-all duration-300">
-                <div class="w-12 h-12 mx-auto mb-2 bg-forest-green text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span class="text-xl">🍽️</span>
-                </div>
-                <h3 class="text-sm font-medium text-gray-800 group-hover:text-forest-green">
-                    {{ category.name }}
-                </h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    {{ category.products.count }} item{{ category.products.count|pluralize:"s" }}
+    <!-- Newsletter -->
+    <section class="py-16 bg-gradient-to-br from-primary to-green-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="max-w-3xl mx-auto" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Join Our Foodie Community</h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Subscribe to get weekly updates on new dishes, special offers, and exclusive discounts.
                 </p>
-            </a>
-            {% endfor %}
+                <div class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                    <input type="tel" id="whatsapp-number" placeholder="+237 6XX XXX XXX" class="flex-grow px-6 py-4 rounded-full text-dark focus:outline-none focus:ring-2 focus:ring-secondary">
+                    <button onclick="subscribeWhatsApp()" class="btn-3d bg-secondary text-dark px-8 py-4 rounded-full font-bold hover:bg-yellow-400 transition-all">
+                        Subscribe
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
-{% endif %}
-{% endblock %}
+    </section>
 
-{% block extra_js %}
-<script>
-// Real-time search functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.querySelector('input[name="q"]');
-    let searchTimeout;
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            const query = this.value.trim();
-            
-            if (query.length >= 2) {
-                searchTimeout = setTimeout(() => {
-                    // Auto-submit form after 500ms of no typing
-                    this.form.submit();
-                }, 500);
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            🍽️
+                        </div>
+                        <span class="text-xl font-bold">BueaDelights</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Bringing authentic Cameroonian flavors to your doorstep since 2020.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'backend:home' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'backend:products' %}" class="text-gray-400 hover:text-white transition-colors">Our Menu</a></li>
+                        <li><a href="{% url 'backend:catering' %}" class="text-gray-400 hover:text-white transition-colors">Catering</a></li>
+                        <li><a href="{% url 'backend:about' %}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{% url 'backend:contact' %}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Popular Dishes</h4>
+                    <ul class="space-y-3">
+                        <li><span class="text-gray-400">Ndolé Special</span></li>
+                        <li><span class="text-gray-400">Achu & Yellow Soup</span></li>
+                        <li><span class="text-gray-400">Eru & Water Fufu</span></li>
+                        <li><span class="text-gray-400">Grilled Fish</span></li>
+                        <li><span class="text-gray-400">Puff Puff & Beans</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Contact Info</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li>📍 Buea, Southwest Region, Cameroon</li>
+                        <li>📱 +237 6 99 80 82 60</li>
+                        <li>✉️ info@bueadelights.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    © 2025 BueaDelights. All rights reserved. Made with ❤️ in Buea, Cameroon.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/237699808260?text=Hello%20BueaDelights!%20I'm%20browsing%20your%20menu." 
+       class="fixed bottom-8 left-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all z-50 animate-pulse"
+       title="Chat with us on WhatsApp">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'block') {
+                mobileMenu.style.display = 'none';
+            } else {
+                mobileMenu.style.display = 'block';
             }
         });
-    }
-    
-    // Add loading state to add-to-cart buttons
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', function() {
-            const originalHtml = this.innerHTML;
-            this.innerHTML = '<div class="loader"></div>';
-            this.disabled = true;
-            
-            // Re-enable button after 2 seconds
-            setTimeout(() => {
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-            }, 2000);
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('shadow-lg');
+                navbar.classList.add('bg-primary');
+                navbar.classList.remove('glass-effect');
+            } else {
+                navbar.classList.remove('shadow-lg');
+                navbar.classList.remove('bg-primary');
+                navbar.classList.add('glass-effect');
+            }
         });
-    });
-});
-</script>
-{% endblock %}
+
+        // Add to cart functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const addToCartBtns = document.querySelectorAll('.add-to-cart');
+            
+            addToCartBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const productId = this.dataset.productId;
+                    const productName = this.dataset.productName;
+                    const productPrice = this.dataset.productPrice;
+                    
+                    // Show loading state
+                    const originalText = this.textContent;
+                    this.innerHTML = '<div class="loading-spinner"></div> Adding...';
+                    this.disabled = true;
+                    
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    
+                    fetch('{% url "backend:add_to_cart" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            quantity: 1
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart count
+                            document.querySelectorAll('.cart-count').forEach(el => {
+                                el.textContent = data.cart_count;
+                            });
+                            
+                            // Show success message
+                            showNotification(`${productName} added to cart!`, 'success');
+                        } else {
+                            showNotification('Error adding product to cart', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Error adding product to cart', 'error');
+                    })
+                    .finally(() => {
+                        // Restore button
+                        this.textContent = originalText;
+                        this.disabled = false;
+                    });
+                });
+            });
+        });
+
+        // Newsletter subscription
+        function subscribeWhatsApp() {
+            const phoneInput = document.getElementById('whatsapp-number');
+            const phone = phoneInput.value.trim();
+            
+            if (!phone) {
+                alert('Please enter your WhatsApp number');
+                return;
+            }
+            
+            const message = `Hello BueaDelights! I would like to subscribe to your newsletter updates. My WhatsApp number is: ${phone}`;
+            const whatsappUrl = `https://wa.me/237699808260?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+            phoneInput.value = '';
+        }
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm animate-fade-in-down ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
+    {% csrf_token %}
+</body>
+</html>

@@ -536,7 +536,7 @@ def search_products(request):
 
 # Admin Authentication Views
 class AdminLoginView(LoginView):
-    template_name = 'backend/admin/login.html'
+    template_name = 'backend/auth/login.html'
     form_class = AdminLoginForm
     redirect_authenticated_user = True
     
