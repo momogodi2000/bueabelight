@@ -654,3 +654,161 @@ from .admin_views import (
     AdminMessageListView, AdminCateringListView,
     AdminAnalyticsView, AdminSettingsView
 )
+
+
+
+
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.db import connection
+import sys
+import traceback
+
+def debug_view(request):
+    """Debug view to check what's working and what's not"""
+    debug_info = []
+    
+    try:
+        # Check database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            debug_info.append("✅ Database connection: OK")
+    except Exception as e:
+        debug_info.append(f"❌ Database error: {str(e)}")
+    
+    try:
+        # Check if models can be imported
+        from .models import BusinessSettings, Category, Product
+        debug_info.append("✅ Models import: OK")
+        
+        # Check if tables exist and have data
+        bs_count = BusinessSettings.objects.count()
+        cat_count = Category.objects.count()
+        prod_count = Product.objects.count()
+        
+        debug_info.append(f"📊 BusinessSettings: {bs_count} records")
+        debug_info.append(f"📊 Categories: {cat_count} records")
+        debug_info.append(f"📊 Products: {prod_count} records")
+        
+    except Exception as e:
+        debug_info.append(f"❌ Model error: {str(e)}")
+        debug_info.append(f"📋 Traceback: {traceback.format_exc()}")
+    
+    try:
+        # Check static files
+        from django.conf import settings
+        import os
+        static_root = settings.STATIC_ROOT
+        if os.path.exists(static_root):
+            static_files = len(os.listdir(static_root))
+            debug_info.append(f"✅ Static files: {static_files} files in {static_root}")
+        else:
+            debug_info.append(f"❌ Static root not found: {static_root}")
+    except Exception as e:
+        debug_info.append(f"❌ Static files error: {str(e)}")
+    
+    # System info
+    debug_info.append(f"🐍 Python version: {sys.version}")
+    debug_info.append(f"🗂️ Django settings module: {os.environ.get('DJANGO_SETTINGS_MODULE', 'Not set')}")
+    
+    # Create simple HTML response
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>BueaDelights Debug</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            .success {{ color: green; }}
+            .error {{ color: red; }}
+            .info {{ color: blue; }}
+            pre {{ background: #f5f5f5; padding: 10px; border-radius: 5px; }}
+        </style>
+    </head>
+    <body>
+        <h1>🔧 BueaDelights Debug Information</h1>
+        <pre>
+{'<br>'.join(debug_info)}
+        </pre>
+        <hr>
+        <p><a href="/">← Back to Homepage</a> | <a href="/admin/">Admin Panel</a></p>
+    </body>
+    </html>
+    """
+    
+    return HttpResponse(html)
+
+# Simple home view that should work
+def simple_home_view(request):
+    """Ultra-simple home view for testing"""
+    try:
+        from .models import BusinessSettings
+        business = BusinessSettings.objects.first()
+        business_name = business.business_name if business else "BueaDelights"
+    except:
+        business_name = "BueaDelights"
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{business_name}</title>
+        <style>
+            body {{ 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 40px; 
+                background: #f8f9fa;
+            }}
+            .container {{ 
+                max-width: 800px; 
+                margin: 0 auto; 
+                background: white; 
+                padding: 40px; 
+                border-radius: 10px; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .header {{ 
+                text-align: center; 
+                color: #228B22; 
+                margin-bottom: 30px;
+            }}
+            .btn {{ 
+                background: #228B22; 
+                color: white; 
+                padding: 12px 24px; 
+                text-decoration: none; 
+                border-radius: 5px; 
+                display: inline-block; 
+                margin: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🍽️ {business_name}</h1>
+                <p>Local Flavors at Your Fingertips</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <h2>Welcome to BueaDelights!</h2>
+                <p>Your favorite local restaurant is now online.</p>
+                
+                <a href="/admin/" class="btn">Admin Panel</a>
+                <a href="/debug/" class="btn">Debug Info</a>
+            </div>
+            
+            <hr style="margin: 40px 0;">
+            
+            <div style="text-align: center; color: #666;">
+                <p>📱 WhatsApp: +237699808260</p>
+                <p>📧 Email: info@bueadelights.com</p>
+                <p>📍 Buea, Southwest Region, Cameroon</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return HttpResponse(html)

@@ -68,4 +68,8 @@ urlpatterns = [
 
     #path('admin/api/csrf-token/', views.csrf_token_view, name='csrf_token'),
     #path('admin/offline/', views.offline_view, name='admin_offline')
+
+        # Debug routes
+    path('debug/', views.debug_view, name='debug'),
+    path('simple/', views.simple_home_view, name='simple_home'),
 ]

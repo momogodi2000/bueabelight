@@ -9,105 +9,132 @@ echo "📦 Installing Python dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Install Node.js dependencies and build CSS (if package.json exists)
-if [ -f "package.json" ]; then
-    echo "🎨 Installing Node.js dependencies and building CSS..."
-    npm install
-    npm run build-css-prod || echo "⚠️ CSS build failed, continuing..."
-fi
-
 # Create necessary directories
 echo "📁 Creating necessary directories..."
 mkdir -p staticfiles
-mkdir -p media  
+mkdir -p media
 mkdir -p logs
-mkdir -p static
+mkdir -p static/css
+mkdir -p static/js
+mkdir -p static/images
 
-# Database setup and migrations
-echo "📊 Setting up database and running migrations..."
+# Create a simple CSS file if none exists
+echo "📄 Creating basic static files..."
+cat > static/css/style.css << 'EOF'
+/* Basic styles for BueaDelights */
+body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; }
+.header { background: #228B22; color: white; padding: 20px; text-align: center; }
+.btn { background: #228B22; color: white; padding: 10px 20px; border: none; border-radius: 5px; }
+EOF
 
-# Test database connection first
+# Check if we can connect to database
 echo "🔗 Testing database connection..."
 python -c "
-import django
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+import django
 django.setup()
+
 from django.db import connection
+from django.conf import settings
+
+print(f'Database Engine: {settings.DATABASES[\"default\"][\"ENGINE\"]}')
+print(f'Database Name: {settings.DATABASES[\"default\"].get(\"NAME\", \"N/A\")}')
+
 try:
-    cursor = connection.cursor()
-    cursor.execute('SELECT 1')
-    print('✅ Database connection successful')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT version()')
+        result = cursor.fetchone()
+        print(f'✅ Database connected: {result[0] if result else \"Connected\"}')
 except Exception as e:
     print(f'❌ Database connection failed: {e}')
-    import sys
-    sys.exit(1)
+    exit(1)
 "
 
-# Create migrations for backend app
-echo "📋 Creating migrations for backend app..."
-python manage.py makemigrations backend --settings=bueadelights.settings
+# Force create migrations
+echo "📋 Creating migrations..."
+python manage.py makemigrations --empty backend || echo "No migrations needed"
+python manage.py makemigrations backend || echo "Backend migrations already exist"
+python manage.py makemigrations || echo "All migrations already exist"
 
-# Create any other migrations
-echo "📋 Creating all migrations..."  
-python manage.py makemigrations --settings=bueadelights.settings
+# Show migration status
+echo "📊 Migration status:"
+python manage.py showmigrations
 
-# Apply all migrations
-echo "📊 Applying all migrations..."
-python manage.py migrate --settings=bueadelights.settings
+# Apply migrations with verbose output
+echo "📊 Applying migrations..."
+python manage.py migrate --verbosity=2
+
+# Verify tables were created
+echo "🔍 Verifying database tables..."
+python -c "
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+import django
+django.setup()
+
+from django.db import connection
+
+with connection.cursor() as cursor:
+    cursor.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'\")
+    tables = [row[0] for row in cursor.fetchall()]
+    
+    required_tables = ['backend_businesssettings', 'backend_category', 'backend_product', 'auth_user']
+    missing = [t for t in required_tables if t not in tables]
+    
+    if missing:
+        print(f'❌ Missing tables: {missing}')
+        print(f'📋 Available tables: {tables[:10]}')
+    else:
+        print('✅ All required tables exist')
+        print(f'📊 Total tables: {len(tables)}')
+"
 
 # Collect static files
 echo "📄 Collecting static files..."
-python manage.py collectstatic --no-input --settings=bueadelights.settings
+python manage.py collectstatic --no-input --verbosity=2
 
-# Verify static files were collected
-if [ -d "staticfiles" ]; then
-    echo "✅ Static files collected successfully"
-    ls -la staticfiles/ | head -10
-else
-    echo "❌ Static files collection failed"
-fi
+# Verify static files
+echo "✅ Static files verification:"
+ls -la staticfiles/ | head -10 || echo "No staticfiles directory found"
 
-# Create superuser
-echo "👤 Creating superuser..."
-python manage.py shell --settings=bueadelights.settings << 'EOF'
-from django.contrib.auth import get_user_model
+# Create superuser safely
+echo "👤 Creating admin user..."
+python -c "
 import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+import django
+django.setup()
 
-User = get_user_model()
+from django.contrib.auth.models import User
 
-# Create admin users
-admin_users = [
-    {
-        'username': 'admin',
-        'email': 'admin@bueadelights.com',
-        'password': 'BueaDelights2024!',
-        'first_name': 'Admin',
-        'last_name': 'User'
-    }
-]
+username = 'admin'
+email = 'admin@bueadelights.com'
+password = 'BueaDelights2024!'
 
-for user_data in admin_users:
-    if not User.objects.filter(username=user_data['username']).exists():
-        user = User.objects.create_superuser(
-            username=user_data['username'],
-            email=user_data['email'],
-            password=user_data['password'],
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name']
-        )
-        print(f"✅ Created superuser: {user.username}")
-    else:
-        print(f"✅ Superuser {user_data['username']} already exists")
-EOF
+if not User.objects.filter(username=username).exists():
+    user = User.objects.create_superuser(username, email, password)
+    print(f'✅ Created admin user: {username}')
+else:
+    print(f'✅ Admin user already exists: {username}')
+"
 
-# Create business settings and sample data
-echo "🏪 Setting up business configuration and sample data..."
-python manage.py shell --settings=bueadelights.settings << 'EOF'
-# Create business settings
+# Create basic business data
+echo "🏪 Setting up business data..."
+python -c "
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+import django
+django.setup()
+
 try:
-    from backend.models import BusinessSettings
+    from backend.models import BusinessSettings, Category, Product
+    from decimal import Decimal
+    
+    # Business settings
     settings_obj, created = BusinessSettings.objects.get_or_create(
+        id=1,
         defaults={
             'business_name': 'BueaDelights',
             'business_description': 'Local Flavors at Your Fingertips',
@@ -120,81 +147,44 @@ try:
             'is_accepting_orders': True
         }
     )
-    if created:
-        print("✅ Business settings created")
-    else:
-        print("✅ Business settings already exist")
-except Exception as e:
-    print(f"⚠️ Error with business settings: {e}")
-
-# Create sample categories and products
-try:
-    from backend.models import Category, Product
-    from decimal import Decimal
-
-    # Create categories
-    traditional_cat, created = Category.objects.get_or_create(
+    print('✅ Business settings ready')
+    
+    # Create a simple category
+    cat, created = Category.objects.get_or_create(
         name='Traditional Dishes',
         defaults={'description': 'Authentic Cameroonian traditional meals'}
     )
-    if created:
-        print("✅ Created Traditional Dishes category")
-
-    snacks_cat, created = Category.objects.get_or_create(
-        name='Local Snacks',
-        defaults={'description': 'Popular local snacks and appetizers'}
-    )
-    if created:
-        print("✅ Created Local Snacks category")
-
-    # Create sample products
-    product1, created = Product.objects.get_or_create(
+    print(f'✅ Category ready: {cat.name}')
+    
+    # Create a simple product
+    product, created = Product.objects.get_or_create(
         name='Ndolé with Plantain',
         defaults={
-            'description': 'Traditional Cameroonian dish with groundnuts, vegetables, and meat served with ripe plantain',
+            'description': 'Traditional Cameroonian dish',
             'price': Decimal('3500'),
-            'category': traditional_cat,
+            'category': cat,
             'is_featured': True,
             'stock_quantity': 20
         }
     )
-    if created:
-        print("✅ Created Ndolé product")
-
-    product2, created = Product.objects.get_or_create(
-        name='Chin-chin',
-        defaults={
-            'description': 'Crispy fried snack, perfect for any time of the day',
-            'price': Decimal('1000'),
-            'category': snacks_cat,
-            'stock_quantity': 50
-        }
-    )
-    if created:
-        print("✅ Created Chin-chin product")
-
-    print("🎉 Sample data setup complete!")
-
+    print(f'✅ Product ready: {product.name}')
+    
 except Exception as e:
-    print(f"⚠️ Error creating sample data: {e}")
-EOF
+    print(f'⚠️ Error setting up business data: {e}')
+    import traceback
+    traceback.print_exc()
+"
 
-# Final verification
-echo "🔍 Final verification..."
-python manage.py check --settings=bueadelights.settings
+# Final health check
+echo "🔍 Final application health check..."
+python manage.py check --deploy
 
-echo "✅ Build process completed successfully!"
-echo "🎉 BueaDelights is ready for deployment!"
+echo "✅ Build completed successfully!"
 echo ""
-echo "📋 Deployment Summary:"
-echo "- Python dependencies installed"
-echo "- Database connected and migrated"
-echo "- Static files collected"
-echo "- Super admin user created"
-echo "- Business settings configured"
-echo "- Sample data created"
+echo "📋 Summary:"
+echo "- Database: Connected and migrated"
+echo "- Static files: Collected"
+echo "- Admin user: admin / BueaDelights2024!"
+echo "- Business data: Created"
 echo ""
-echo "🔑 Admin Access:"
-echo "- URL: /admin/"
-echo "- Username: admin"
-echo "- Password: BueaDelights2024!"
+echo "🌐 Your app should be available at: https://bueadelights.onrender.com"
