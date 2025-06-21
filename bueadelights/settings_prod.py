@@ -14,13 +14,19 @@ DEBUG = False
 
 # Allowed hosts for production
 ALLOWED_HOSTS = [
-    '.onrender.com',
     'bueadelights.onrender.com',
+    '*.onrender.com',
+    '.onrender.com',
     'www.bueadelights.com',
     'bueadelights.com',
     'localhost',
     '127.0.0.1'
 ]
+
+# Also allow from environment variable
+allowed_hosts_env = config('ALLOWED_HOSTS', default='')
+if allowed_hosts_env:
+    ALLOWED_HOSTS.extend([host.strip() for host in allowed_hosts_env.split(',')])
 
 # Database for production (PostgreSQL on Render)
 DATABASES = {
