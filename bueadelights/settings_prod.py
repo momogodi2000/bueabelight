@@ -1,12 +1,20 @@
-from .settings import *
-import dj_database_url
-import os
+"""
+Production settings for BueaDelights Django project.
+"""
 
-# Production settings
+import os
+import dj_database_url
+from decouple import config
+
+# Import base settings
+from .settings import *
+
+# Override settings for production
 DEBUG = False
 
 # Allowed hosts for production
 ALLOWED_HOSTS = [
+    '.onrender.com',
     'bueadelights.onrender.com',
     'www.bueadelights.com',
     'bueadelights.com',
@@ -24,8 +32,20 @@ DATABASES = {
 }
 
 # Static files configuration for production
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional static files directories
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Static files storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # WhiteNoise configuration
 WHITENOISE_USE_FINDERS = True
@@ -36,13 +56,14 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_SECONDS = 86400
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False  # Set to True if you have SSL
+SESSION_COOKIE_SECURE = False  # Set to True if you have SSL
+CSRF_COOKIE_SECURE = False  # Set to True if you have SSL
 SECURE_REFERRER_POLICY = 'same-origin'
 
 # CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
     'https://bueadelights.onrender.com',
     'https://www.bueadelights.com',
     'https://bueadelights.com'
@@ -52,26 +73,9 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     'https://bueadelights.onrender.com',
-    'https://www.bueadelights.com',
+    'https://www.bueadelights.com', 
     'https://bueadelights.com'
 ]
-
-# Cache configuration
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'KEY_PREFIX': 'bueadelights',
-        'TIMEOUT': 300,  # 5 minutes
-    }
-}
-
-# Session configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
 
 # Logging configuration
 LOGGING = {
@@ -88,110 +92,91 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'maxBytes': 1024*1024*5,  # 5 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'simple'
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
             'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['console', 'file'],
             'level': 'INFO',
             'propagate': False,
         },
-        'django.request': {
-            'handlers': ['file', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'backend': {
-            'handlers': ['file', 'console'],
+        'bueadelights': {
+            'handlers': ['console', 'file'],
             'level': 'INFO',
             'propagate': False,
         },
     },
 }
 
-# Create logs directory
-os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# Email configuration for production
-if config('EMAIL_HOST_USER', default=''):
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-    DEFAULT_FROM_EMAIL = f"{BUSINESS_NAME} <{EMAIL_HOST_USER}>"
-    SERVER_EMAIL = DEFAULT_FROM_EMAIL
-else:
-    # Fallback to console backend if email not configured
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# WhatsApp configuration
+WHATSAPP_NUMBER = config('WHATSAPP_NUMBER', default='+237699808260')
+BUSINESS_NAME = config('BUSINESS_NAME', default='BueaDelights')
+BUSINESS_EMAIL = config('BUSINESS_EMAIL', default='info@bueadelights.com')
 
-# Admin configuration
-ADMINS = [
-    ('Caroline Folefack', 'caroline.folefack@bueadelights.com'),
-    ('Yvan Momo Godi', 'yvan.momo@bueadelights.com'),
-    ('Marlyse Momo', 'marlyse.momo@bueadelights.com'),
-]
+# Payment configuration
+NOUPIA_API_KEY = config('NOUPIA_API_KEY', default='')
+NOUPIA_MERCHANT_ID = config('NOUPIA_MERCHANT_ID', default='')
 
-MANAGERS = ADMINS
+# Cache configuration (optional - if you add Redis)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
-# Performance optimizations
-CONN_MAX_AGE = 60
+# If Redis is available, use it for caching
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'bueadelights',
+            'TIMEOUT': 300,
+        }
+    }
 
-# Template caching in production
-if not DEBUG:
-    TEMPLATES[0]['OPTIONS']['loaders'] = [
-        ('django.template.loaders.cached.Loader', [
-            'django.template.loaders.filesystem.Loader',
-            'django.template.loaders.app_directories.Loader',
-        ]),
-    ]
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Performance settings
+USE_TZ = True
+USE_I18N = True
+USE_L10N = True
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
-FILE_UPLOAD_PERMISSIONS = 0o644
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 
-# Security headers
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Admin site configuration
+ADMIN_URL = 'admin/'
 
-# Error reporting
-SENTRY_DSN = config('SENTRY_DSN', default='')
-if SENTRY_DSN:
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
-    from sentry_sdk.integrations.logging import LoggingIntegration
-    
-    sentry_logging = LoggingIntegration(
-        level=logging.INFO,
-        event_level=logging.ERROR
-    )
-    
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration(), sentry_logging],
-        traces_sample_rate=0.1,
-        send_default_pii=True,
-        environment='production'
-    )
+print("🔧 Production settings loaded successfully")
