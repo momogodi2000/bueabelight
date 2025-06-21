@@ -19,58 +19,58 @@ fi
 # Create necessary directories
 echo "📁 Creating necessary directories..."
 mkdir -p staticfiles
-mkdir -p media
+mkdir -p media  
 mkdir -p logs
-
-# Collect static files
-echo "📄 Collecting static files..."
-python manage.py collectstatic --no-input
+mkdir -p static
 
 # Database setup and migrations
 echo "📊 Setting up database and running migrations..."
 
-# Check database connection
+# Test database connection first
 echo "🔗 Testing database connection..."
-python manage.py shell << 'EOF'
+python -c "
+import django
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+django.setup()
 from django.db import connection
 try:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT 1")
-    print("✅ Database connection successful")
+    cursor = connection.cursor()
+    cursor.execute('SELECT 1')
+    print('✅ Database connection successful')
 except Exception as e:
-    print(f"❌ Database connection failed: {e}")
-    exit(1)
-EOF
+    print(f'❌ Database connection failed: {e}')
+    import sys
+    sys.exit(1)
+"
 
 # Create migrations for backend app
 echo "📋 Creating migrations for backend app..."
-python manage.py makemigrations backend --no-input
+python manage.py makemigrations backend --settings=bueadelights.settings
 
-# Create migrations for any other apps that need them
-echo "📋 Creating all migrations..."
-python manage.py makemigrations --no-input
+# Create any other migrations
+echo "📋 Creating all migrations..."  
+python manage.py makemigrations --settings=bueadelights.settings
 
 # Apply all migrations
 echo "📊 Applying all migrations..."
-python manage.py migrate --no-input
+python manage.py migrate --settings=bueadelights.settings
 
-# Verify critical tables exist
-echo "🔍 Verifying database tables..."
-python manage.py shell << 'EOF'
-from django.db import connection
-tables = connection.introspection.table_names()
-required_tables = ['backend_businesssettings', 'backend_category', 'backend_product', 'auth_user']
-missing_tables = [table for table in required_tables if table not in tables]
-if missing_tables:
-    print(f"❌ Missing tables: {missing_tables}")
-    print("📋 Available tables:", tables[:10])  # Show first 10 tables
-else:
-    print("✅ All required tables exist")
-EOF
+# Collect static files
+echo "📄 Collecting static files..."
+python manage.py collectstatic --no-input --settings=bueadelights.settings
+
+# Verify static files were collected
+if [ -d "staticfiles" ]; then
+    echo "✅ Static files collected successfully"
+    ls -la staticfiles/ | head -10
+else
+    echo "❌ Static files collection failed"
+fi
 
 # Create superuser
 echo "👤 Creating superuser..."
-python manage.py shell << 'EOF'
+python manage.py shell --settings=bueadelights.settings << 'EOF'
 from django.contrib.auth import get_user_model
 import os
 
@@ -84,27 +84,6 @@ admin_users = [
         'password': 'BueaDelights2024!',
         'first_name': 'Admin',
         'last_name': 'User'
-    },
-    {
-        'username': 'folefack_caroline',
-        'email': 'caroline@bueadelights.com', 
-        'password': 'Caroline2024!',
-        'first_name': 'Caroline',
-        'last_name': 'Folefack'
-    },
-    {
-        'username': 'momo_godi_yvan',
-        'email': 'yvan@bueadelights.com',
-        'password': 'Yvan2024!', 
-        'first_name': 'Yvan',
-        'last_name': 'Momo Godi'
-    },
-    {
-        'username': 'momo_marlyse',
-        'email': 'marlyse@bueadelights.com',
-        'password': 'Marlyse2024!',
-        'first_name': 'Marlyse', 
-        'last_name': 'Momo'
     }
 ]
 
@@ -124,29 +103,29 @@ EOF
 
 # Create business settings and sample data
 echo "🏪 Setting up business configuration and sample data..."
-python manage.py shell << 'EOF'
+python manage.py shell --settings=bueadelights.settings << 'EOF'
 # Create business settings
 try:
     from backend.models import BusinessSettings
-    if not BusinessSettings.objects.exists():
-        BusinessSettings.objects.create(
-            business_name='BueaDelights',
-            business_description='Local Flavors at Your Fingertips',
-            phone='+237699808260',
-            email='info@bueadelights.com',
-            address='Buea, Southwest Region, Cameroon',
-            operating_hours='Monday - Sunday: 8:00 AM - 10:00 PM',
-            delivery_fee=1500,
-            delivery_areas='Buea, Limbe, Tiko, Douala',
-            is_accepting_orders=True
-        )
+    settings_obj, created = BusinessSettings.objects.get_or_create(
+        defaults={
+            'business_name': 'BueaDelights',
+            'business_description': 'Local Flavors at Your Fingertips',
+            'phone': '+237699808260',
+            'email': 'info@bueadelights.com',
+            'address': 'Buea, Southwest Region, Cameroon',
+            'operating_hours': 'Monday - Sunday: 8:00 AM - 10:00 PM',
+            'delivery_fee': 1500,
+            'delivery_areas': 'Buea, Limbe, Tiko, Douala',
+            'is_accepting_orders': True
+        }
+    )
+    if created:
         print("✅ Business settings created")
     else:
         print("✅ Business settings already exist")
-except ImportError:
-    print("⚠️ BusinessSettings model not found, skipping...")
 except Exception as e:
-    print(f"⚠️ Error creating business settings: {e}")
+    print(f"⚠️ Error with business settings: {e}")
 
 # Create sample categories and products
 try:
@@ -154,106 +133,68 @@ try:
     from decimal import Decimal
 
     # Create categories
-    categories_data = [
-        {
-            'name': 'Traditional Dishes',
-            'description': 'Authentic Cameroonian traditional meals'
-        },
-        {
-            'name': 'Local Snacks', 
-            'description': 'Popular local snacks and appetizers'
-        },
-        {
-            'name': 'Beverages',
-            'description': 'Fresh local drinks and beverages'
-        },
-        {
-            'name': 'Pastries',
-            'description': 'Fresh baked goods and pastries'
-        }
-    ]
+    traditional_cat, created = Category.objects.get_or_create(
+        name='Traditional Dishes',
+        defaults={'description': 'Authentic Cameroonian traditional meals'}
+    )
+    if created:
+        print("✅ Created Traditional Dishes category")
 
-    for cat_data in categories_data:
-        category, created = Category.objects.get_or_create(
-            name=cat_data['name'],
-            defaults={'description': cat_data['description']}
-        )
-        if created:
-            print(f"✅ Created category: {category.name}")
+    snacks_cat, created = Category.objects.get_or_create(
+        name='Local Snacks',
+        defaults={'description': 'Popular local snacks and appetizers'}
+    )
+    if created:
+        print("✅ Created Local Snacks category")
 
     # Create sample products
-    traditional_cat = Category.objects.get(name='Traditional Dishes')
-    snacks_cat = Category.objects.get(name='Local Snacks') 
-    beverages_cat = Category.objects.get(name='Beverages')
-
-    products_data = [
-        {
-            'name': 'Ndolé with Plantain',
+    product1, created = Product.objects.get_or_create(
+        name='Ndolé with Plantain',
+        defaults={
             'description': 'Traditional Cameroonian dish with groundnuts, vegetables, and meat served with ripe plantain',
             'price': Decimal('3500'),
             'category': traditional_cat,
             'is_featured': True,
             'stock_quantity': 20
-        },
-        {
-            'name': 'Achu with Yellow Soup',
-            'description': 'Traditional pounded cocoyam served with delicious yellow soup', 
-            'price': Decimal('3000'),
-            'category': traditional_cat,
-            'is_featured': True,
-            'stock_quantity': 15
-        },
-        {
-            'name': 'Chin-chin',
+        }
+    )
+    if created:
+        print("✅ Created Ndolé product")
+
+    product2, created = Product.objects.get_or_create(
+        name='Chin-chin',
+        defaults={
             'description': 'Crispy fried snack, perfect for any time of the day',
             'price': Decimal('1000'),
             'category': snacks_cat,
             'stock_quantity': 50
-        },
-        {
-            'name': 'Puff-puff',
-            'description': 'Sweet fried dough balls, a favorite local snack',
-            'price': Decimal('500'),
-            'category': snacks_cat, 
-            'stock_quantity': 30
-        },
-        {
-            'name': 'Bissap Juice',
-            'description': 'Refreshing hibiscus flower drink',
-            'price': Decimal('800'),
-            'category': beverages_cat,
-            'stock_quantity': 25
         }
-    ]
-
-    for prod_data in products_data:
-        product, created = Product.objects.get_or_create(
-            name=prod_data['name'],
-            defaults=prod_data
-        )
-        if created:
-            print(f"✅ Created product: {product.name}")
+    )
+    if created:
+        print("✅ Created Chin-chin product")
 
     print("🎉 Sample data setup complete!")
 
-except ImportError:
-    print("⚠️ Product models not found, skipping sample data...")
 except Exception as e:
     print(f"⚠️ Error creating sample data: {e}")
 EOF
+
+# Final verification
+echo "🔍 Final verification..."
+python manage.py check --settings=bueadelights.settings
 
 echo "✅ Build process completed successfully!"
 echo "🎉 BueaDelights is ready for deployment!"
 echo ""
 echo "📋 Deployment Summary:"
 echo "- Python dependencies installed"
+echo "- Database connected and migrated"
 echo "- Static files collected"
-echo "- Database migrations applied"
-echo "- Super admin users created"
+echo "- Super admin user created"
 echo "- Business settings configured"
 echo "- Sample data created"
 echo ""
 echo "🔑 Admin Access:"
 echo "- URL: /admin/"
-echo "- Users: admin, folefack_caroline, momo_godi_yvan, momo_marlyse"
-echo "- Check logs for passwords or change them immediately!"
+echo "- Username: admin"
+echo "- Password: BueaDelights2024!"

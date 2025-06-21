@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.13.4
       - key: DJANGO_SETTINGS_MODULE
-        value: bueadelights.settings_prod
+        value: bueadelights.settings
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
