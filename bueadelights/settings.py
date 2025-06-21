@@ -24,14 +24,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xu8s84x48n2dl#eaw9k*3&)xtsf(rmr#4$2*csqxqs%ago!(@='
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-xu8s84x48n2dl#eaw9k*3&)xtsf(rmr#4$2*csqxqs%ago!(@=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS configuration - Fixed to properly handle environment variables
+allowed_hosts_env = config('ALLOWED_HOSTS', default='localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
+# Make sure we always include these essential hosts
+if 'localhost' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('localhost')
+if '127.0.0.1' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('127.0.0.1')
 
+# Add Render.com domain if not present
+if 'bueadelights.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('bueadelights.onrender.com')
+if '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 # Application definition
 DJANGO_APPS = [
@@ -53,10 +65,10 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
-
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,7 +101,6 @@ WSGI_APPLICATION = 'bueadelights.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 
 # Database configuration
 if config('DATABASE_URL', default=None):
@@ -125,8 +136,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Douala'
@@ -139,6 +148,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Static files storage for production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -171,7 +183,20 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='').split(',') if not DEBUG else []
+CORS_ALLOWED_ORIGINS = [
+    'https://bueadelights.onrender.com',
+    'https://www.bueadelights.com',
+    'https://bueadelights.com'
+] if not DEBUG else []
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    'https://bueadelights.onrender.com',
+    'https://www.bueadelights.com',
+    'https://bueadelights.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+]
 
 # Security Settings for Production
 if not DEBUG:
@@ -179,21 +204,30 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_SECONDS = 86400
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False  # Set to True when you have SSL
+    SESSION_COOKIE_SECURE = False  # Set to True when you have SSL
+    CSRF_COOKIE_SECURE = False  # Set to True when you have SSL
 
 # Auto-reload for development
 if DEBUG:
     import socket
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
-
-
+    try:
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+    except:
+        INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
 
 # PWA Settings
 PWA_APP_NAME = 'BueaDelights Admin'
 PWA_APP_DESCRIPTION = 'Professional restaurant management system'
 PWA_APP_THEME_COLOR = '#228B22'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
+
+# Print debug info
+if DEBUG:
+    print(f"🔧 Django Settings Loaded")
+    print(f"🌐 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+    print(f"🗃️  DATABASE: {'PostgreSQL' if config('DATABASE_URL', default=None) else 'SQLite'}")
+    print(f"📧 EMAIL_HOST_USER: {EMAIL_HOST_USER}")
+else:
+    print("🚀 Production settings loaded")
