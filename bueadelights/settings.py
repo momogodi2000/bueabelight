@@ -102,20 +102,28 @@ WSGI_APPLICATION = 'bueadelights.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Database configuration
-if config('DATABASE_URL', default=None):
-    # Production database (Render.com)
+# Database configuration - Fixed for Render PostgreSQL
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    # Production database (PostgreSQL on Render)
     DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
+    print(f"🗃️  Using PostgreSQL Database: {DATABASE_URL[:50]}...")
 else:
-    # Development database
+    # Development database (SQLite)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'momo.sqlite3',
         }
     }
+    print("🗃️  Using SQLite Database for development")
 
 
 # Password validation

@@ -26,9 +26,47 @@ mkdir -p logs
 echo "📄 Collecting static files..."
 python manage.py collectstatic --no-input
 
-# Run database migrations
-echo "📊 Running database migrations..."
-python manage.py migrate
+# Database setup and migrations
+echo "📊 Setting up database and running migrations..."
+
+# Check database connection
+echo "🔗 Testing database connection..."
+python manage.py shell << 'EOF'
+from django.db import connection
+try:
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT 1")
+    print("✅ Database connection successful")
+except Exception as e:
+    print(f"❌ Database connection failed: {e}")
+    exit(1)
+EOF
+
+# Create migrations for backend app
+echo "📋 Creating migrations for backend app..."
+python manage.py makemigrations backend --no-input
+
+# Create migrations for any other apps that need them
+echo "📋 Creating all migrations..."
+python manage.py makemigrations --no-input
+
+# Apply all migrations
+echo "📊 Applying all migrations..."
+python manage.py migrate --no-input
+
+# Verify critical tables exist
+echo "🔍 Verifying database tables..."
+python manage.py shell << 'EOF'
+from django.db import connection
+tables = connection.introspection.table_names()
+required_tables = ['backend_businesssettings', 'backend_category', 'backend_product', 'auth_user']
+missing_tables = [table for table in required_tables if table not in tables]
+if missing_tables:
+    print(f"❌ Missing tables: {missing_tables}")
+    print("📋 Available tables:", tables[:10])  # Show first 10 tables
+else:
+    print("✅ All required tables exist")
+EOF
 
 # Create superuser
 echo "👤 Creating superuser..."
