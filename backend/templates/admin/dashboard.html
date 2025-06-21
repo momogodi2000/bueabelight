@@ -11,8 +11,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#228B22">
+    <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
     <link rel="manifest" href="{% static 'manifest.json' %}">
-    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icon-180x180.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon-16x16.png' %}">
+    <link rel="mask-icon" href="{% static 'images/safari-pinned-tab.svg' %}" color="#228B22">
 {% endblock %}
 
 {% block extra_css %}
@@ -32,6 +38,10 @@
         
         * {
             scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
         }
         
         .glass-effect {
@@ -91,54 +101,109 @@
             animation: pulse 2s infinite;
         }
         
-        /* Responsive Design */
-        @media (max-width: 1024px) {
+        /* Mobile-first responsive design */
+        .sidebar {
+            width: 64px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-text {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar:hover .sidebar-text,
+        .sidebar.expanded .sidebar-text {
+            opacity: 1;
+        }
+        
+        .main-content {
+            margin-left: 64px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 1024px) {
+            .sidebar {
+                width: 256px;
+            }
+            
+            .sidebar-text {
+                opacity: 1;
+            }
+            
+            .main-content {
+                margin-left: 256px;
+            }
+        }
+        
+        /* Tablet styles */
+        @media (max-width: 1023px) and (min-width: 769px) {
             .sidebar {
                 width: 80px;
             }
             
-            .sidebar .sidebar-text {
-                display: none;
+            .sidebar:hover {
+                width: 256px;
+                z-index: 60;
+            }
+            
+            .sidebar:hover .sidebar-text {
+                opacity: 1;
             }
             
             .main-content {
                 margin-left: 80px;
             }
             
-            .sidebar:hover {
-                width: 256px;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
             
-            .sidebar:hover .sidebar-text {
-                display: inline;
+            .charts-grid {
+                grid-template-columns: 1fr;
             }
         }
         
+        /* Mobile styles */
         @media (max-width: 768px) {
             .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 256px;
                 transform: translateX(-100%);
-                transition: transform 0.3s ease;
                 z-index: 50;
+                background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.95) 100%);
             }
             
             .sidebar.mobile-open {
                 transform: translateX(0);
             }
             
+            .sidebar-text {
+                opacity: 1;
+            }
+            
             .main-content {
                 margin-left: 0;
+                padding: 0.75rem;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
             
             .charts-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
             
             .quick-actions-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
             
             .header-title {
@@ -148,12 +213,6 @@
             .header-subtitle {
                 font-size: 1rem;
             }
-        }
-        
-        @media (max-width: 480px) {
-            .quick-actions-grid {
-                grid-template-columns: 1fr;
-            }
             
             .stat-card {
                 padding: 1rem;
@@ -162,6 +221,102 @@
             .chart-container {
                 padding: 1rem;
             }
+            
+            .flex.space-x-4 {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .flex.space-x-4 > * {
+                margin: 0;
+            }
+        }
+        
+        /* Small mobile styles */
+        @media (max-width: 480px) {
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 0.5rem;
+            }
+            
+            .header-title {
+                font-size: 1.25rem;
+            }
+            
+            .header-subtitle {
+                font-size: 0.875rem;
+            }
+            
+            .flex.justify-between.items-center {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+        
+        /* Touch-friendly buttons */
+        @media (hover: none) and (pointer: coarse) {
+            .btn-3d {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .sidebar-link {
+                min-height: 48px;
+            }
+        }
+        
+        /* PWA install button */
+        .install-prompt {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .install-prompt.show {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Offline indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 9999;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .offline-indicator.show {
+            transform: translateY(0);
         }
     </style>
 {% endblock %}
@@ -169,8 +324,22 @@
 {% block body_class %}bg-gradient-to-br from-gray-100 to-gray-200{% endblock %}
 
 {% block content %}
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <span>You're offline. Some features may not be available.</span>
+    </div>
+
+    <!-- PWA Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="flex items-center space-x-3">
+            <span>Install BueaDelights Admin for quick access</span>
+            <button id="installBtn" class="bg-white text-primary px-3 py-1 rounded-full text-sm font-semibold">Install</button>
+            <button id="dismissBtn" class="text-white opacity-75 hover:opacity-100">✕</button>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar Toggle -->
-    <button class="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-2 rounded-lg shadow-lg" id="mobileMenuToggle">
+    <button class="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-3 rounded-lg shadow-lg touch-manipulation" id="mobileMenuToggle" aria-label="Toggle menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -178,7 +347,7 @@
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="sidebar admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl bg-gradient-to-b from-primary to-green-800 transition-all duration-300">
+        <aside class="sidebar admin-sidebar min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl bg-gradient-to-b from-primary to-green-800">
             <div class="p-6">
                 <div class="flex items-center space-x-3 mb-8">
                     <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
@@ -191,7 +360,7 @@
                 </div>
                 
                 <nav class="space-y-2">
-                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/10">
+                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/10 touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"/>
@@ -199,7 +368,7 @@
                         <span class="sidebar-text">Dashboard</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
@@ -209,42 +378,42 @@
                         {% endif %}
                     </a>
                     
-                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                         </svg>
                         <span class="sidebar-text">Products</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
                         <span class="sidebar-text">Categories</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                         <span class="sidebar-text">Messages</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         <span class="sidebar-text">Catering</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
                         <span class="sidebar-text">Analytics</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -265,9 +434,9 @@
                             <div class="text-sm text-green-200">Administrator</div>
                         </div>
                     </div>
-                    <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block">
+                    <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block touch-manipulation">
                         <span class="sidebar-text">Logout</span>
-                        <span class="sidebar-icon hidden">🚪</span>
+                        <span class="sidebar-icon lg:hidden">🚪</span>
                     </a>
                 </div>
             </div>
@@ -277,26 +446,26 @@
         <div class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden" id="mobileOverlay"></div>
         
         <!-- Main Content -->
-        <main class="main-content ml-64 flex-1 p-4 lg:p-8 transition-all duration-300">
+        <main class="main-content flex-1 p-4 lg:p-8 transition-all duration-300">
             <!-- Header -->
-            <header class="mb-8" data-aos="fade-down">
+            <header class="mb-6 lg:mb-8" data-aos="fade-down">
                 <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
                     <div>
                         <h1 class="header-title text-2xl lg:text-4xl font-display font-bold text-dark">
                             Welcome back, <span class="text-gradient">{{ user.get_full_name|default:user.username }}</span>
                         </h1>
-                        <p class="header-subtitle text-lg lg:text-xl text-gray-600 mt-2">Here's what's happening with your restaurant today</p>
+                        <p class="header-subtitle text-base lg:text-xl text-gray-600 mt-2">Here's what's happening with your restaurant today</p>
                     </div>
                     
                     <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                        <a href="{% url 'backend:home' %}" class="btn-3d bg-secondary text-dark px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all text-center">
+                        <a href="{% url 'backend:home' %}" class="btn-3d bg-secondary text-dark px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all text-center touch-manipulation">
                             <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                             View Site
                         </a>
-                        <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-center">
+                        <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-center touch-manipulation">
                             <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
@@ -370,7 +539,7 @@
             </div>
             
             <!-- Charts and Tables Row -->
-            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
+            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-6 lg:mb-8">
                 <!-- Orders Chart -->
                 <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="500">
                     <h3 class="text-lg lg:text-xl font-bold text-dark mb-4 lg:mb-6">Orders Overview</h3>
@@ -389,16 +558,16 @@
             </div>
             
             <!-- Recent Orders and Low Stock -->
-            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
+            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-6 lg:mb-8">
                 <!-- Recent Orders -->
                 <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="700">
                     <div class="flex justify-between items-center mb-4 lg:mb-6">
                         <h3 class="text-lg lg:text-xl font-bold text-dark">Recent Orders</h3>
-                        <a href="{% url 'backend:admin_orders' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base">View All →</a>
+                        <a href="{% url 'backend:admin_orders' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base touch-manipulation">View All →</a>
                     </div>
                     <div class="space-y-3 lg:space-y-4 max-h-80 overflow-y-auto">
                         {% for order in recent_orders %}
-                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
                             <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
                                 <div class="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold flex-shrink-0">
                                     {{ order.customer_name|slice:":1"|upper }}
@@ -422,7 +591,7 @@
                         {% empty %}
                         <div class="text-center py-6 lg:py-8 text-gray-500">
                             <div class="text-3xl lg:text-4xl mb-2">📭</div>
-                                                       <p class="text-sm lg:text-base">No recent orders found</p>
+                            <p class="text-sm lg:text-base">No recent orders found</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -432,11 +601,11 @@
                 <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="800">
                     <div class="flex justify-between items-center mb-4 lg:mb-6">
                         <h3 class="text-lg lg:text-xl font-bold text-dark">Low Stock Products</h3>
-                        <a href="{% url 'backend:admin_products' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base">View All →</a>
+                        <a href="{% url 'backend:admin_products' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base touch-manipulation">View All →</a>
                     </div>
                     <div class="space-y-3 lg:space-y-4 max-h-80 overflow-y-auto">
                         {% for product in low_stock_products %}
-                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
                             <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
                                 <div class="w-8 h-8 lg:w-10 lg:h-10 bg-cover bg-center rounded-lg flex-shrink-0" style="background-image: url('{{ product.image.url }}')"></div>
                                 <div class="min-w-0 flex-1">
@@ -465,7 +634,7 @@
             <div class="mb-6 lg:mb-8" data-aos="fade-up" data-aos-delay="900">
                 <h3 class="text-lg lg:text-xl font-bold text-dark mb-4 lg:mb-6">Quick Actions</h3>
                 <div class="quick-actions-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center touch-manipulation">
                         <div class="w-12 h-12 lg:w-14 lg:h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 lg:mb-4">
                             <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -475,7 +644,7 @@
                         <p class="text-gray-600 text-xs lg:text-sm">Manually add a new customer order</p>
                     </a>
                     
-                    <a href="{% url 'backend:admin_product_add' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                    <a href="{% url 'backend:admin_product_add' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center touch-manipulation">
                         <div class="w-12 h-12 lg:w-14 lg:h-14 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-3 lg:mb-4">
                             <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -485,7 +654,7 @@
                         <p class="text-gray-600 text-xs lg:text-sm">Add a new item to your menu</p>
                     </a>
                     
-                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center touch-manipulation">
                         <div class="w-12 h-12 lg:w-14 lg:h-14 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-3 lg:mb-4">
                             <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -495,7 +664,7 @@
                         <p class="text-gray-600 text-xs lg:text-sm">Create a new catering event</p>
                     </a>
                     
-                    <a href="{% url 'backend:admin_analytics' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                    <a href="{% url 'backend:admin_analytics' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center touch-manipulation">
                         <div class="w-12 h-12 lg:w-14 lg:h-14 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-3 lg:mb-4">
                             <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -535,11 +704,25 @@
                 mobileMenuToggle.addEventListener('click', function() {
                     sidebar.classList.toggle('mobile-open');
                     mobileOverlay.classList.toggle('hidden');
+                    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
                 });
                 
                 mobileOverlay.addEventListener('click', function() {
                     sidebar.classList.remove('mobile-open');
                     mobileOverlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+                
+                // Close sidebar when clicking on a link
+                const sidebarLinks = sidebar.querySelectorAll('a');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('mobile-open');
+                            mobileOverlay.classList.add('hidden');
+                            document.body.style.overflow = '';
+                        }
+                    });
                 });
             }
             
@@ -621,12 +804,75 @@
                 });
             }
             
-            // PWA Service Worker Registration
+            // PWA functionality
+            let deferredPrompt;
+            const installPrompt = document.getElementById('installPrompt');
+            const installBtn = document.getElementById('installBtn');
+            const dismissBtn = document.getElementById('dismissBtn');
+            
+            // Listen for the beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install prompt
+                installPrompt.classList.add('show');
+            });
+            
+            // Handle install button click
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    // Show the install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    // Clear the deferredPrompt variable
+                    deferredPrompt = null;
+                    // Hide the install prompt
+                    installPrompt.classList.remove('show');
+                }
+            });
+            
+            // Handle dismiss button click
+            dismissBtn.addEventListener('click', () => {
+                installPrompt.classList.remove('show');
+                // Store dismissal to avoid showing again for a while
+                localStorage.setItem('installPromptDismissed', Date.now().toString());
+            });
+            
+            // Check if install prompt was recently dismissed
+            const dismissed = localStorage.getItem('installPromptDismissed');
+            if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) {
+                // Don't show for 7 days after dismissal
+                installPrompt.style.display = 'none';
+            }
+            
+            // Handle app installation
+            window.addEventListener('appinstalled', () => {
+                // Hide the install prompt
+                installPrompt.classList.remove('show');
+                // Show success message
+                console.log('PWA was installed');
+            });
+            
+            // Service Worker Registration
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                     navigator.serviceWorker.register('/sw.js').then(
                         function(registration) {
                             console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                            
+                            // Handle updates
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        // Show update available notification
+                                        showUpdateNotification();
+                                    }
+                                });
+                            });
                         },
                         function(err) {
                             console.log('ServiceWorker registration failed: ', err);
@@ -634,35 +880,78 @@
                     );
                 });
             }
-
-            // Register service worker
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-            console.log('SW registered:', registration);
             
-            // Handle updates
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // Show update available notification
-                        showUpdateNotification();
-                    }
-                });
+            // Network status handling
+            const offlineIndicator = document.getElementById('offlineIndicator');
+            
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineIndicator.classList.remove('show');
+                } else {
+                    offlineIndicator.classList.add('show');
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            
+            // Initial status check
+            updateOnlineStatus();
+            
+            // Background sync for offline actions
+            function scheduleBackgroundSync(tag) {
+                if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        return registration.sync.register(tag);
+                    });
+                }
+            }
+            
+            // Update notification
+            function showUpdateNotification() {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-primary text-white p-4 rounded-lg shadow-lg z-50';
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span>New version available</span>
+                        <button onclick="window.location.reload()" class="bg-white text-primary px-3 py-1 rounded text-sm font-semibold">Update</button>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 10000);
+            }
+            
+            // Touch gestures for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
             });
-        })
-        .catch(error => console.log('SW registration failed:', error));
-}
-
-// Enable background sync for offline actions
-function scheduleBackgroundSync(tag) {
-    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
-        navigator.serviceWorker.ready.then(registration => {
-            return registration.sync.register(tag);
-        });
-    }
-}
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleGesture();
+            });
+            
+            function handleGesture() {
+                if (touchEndX < touchStartX - 50 && sidebar.classList.contains('mobile-open')) {
+                    // Swipe left to close sidebar
+                    sidebar.classList.remove('mobile-open');
+                    mobileOverlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+                if (touchEndX > touchStartX + 50 && !sidebar.classList.contains('mobile-open') && touchStartX < 50) {
+                    // Swipe right from edge to open sidebar
+                    sidebar.classList.add('mobile-open');
+                    mobileOverlay.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         });
     </script>
 {% endblock %}

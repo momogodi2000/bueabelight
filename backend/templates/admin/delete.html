@@ -1,347 +1,746 @@
+{% extends "admin/base_admin.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Product - BueaDelights Admin</title>
-    <meta name="description" content="Delete product from BueaDelights menu">
+
+{% block title %}Delete Product - BueaDelights Admin{% endblock %}
+{% block description %}Delete product from BueaDelights menu{% endblock %}
+
+{% block extra_head %}
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#228B22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="msapplication-TileColor" content="#228B22">
+<meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
+<link rel="manifest" href="{% static 'manifest.json' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icon-180x180.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon-32x32.png' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon-16x16.png' %}">
+
+<!-- AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<!-- Custom Styles -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#228B22">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="BueaDelights">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    :root {
+        --primary: #228B22;
+        --secondary: #FFD700;
+        --accent: #DC143C;
+        --dark: #1a1a1a;
+    }
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    * {
+        scroll-behavior: smooth;
+    }
     
-    <!-- Custom Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#228B22',
-                        'secondary': '#FFD700',
-                        'accent': '#DC143C',
-                        'dark': '#1a1a1a',
-                        'glass': 'rgba(255, 255, 255, 0.1)'
-                    },
-                    fontFamily: {
-                        'display': ['Georgia', 'serif'],
-                        'body': ['Inter', 'sans-serif']
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'slide-up': 'slideUp 0.6s ease-out',
-                        'slide-right': 'slideRight 0.8s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'bounce-slow': 'bounce 2s infinite',
-                        'rotate-slow': 'rotateY 10s linear infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate'
-                    }
-                }
-            }
-        }
-    </script>
+    body {
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
     
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    .admin-sidebar {
+        background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
+    }
     
-    <!-- Custom Styles -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        :root {
-            --primary: #228B22;
-            --secondary: #FFD700;
-            --accent: #DC143C;
-            --dark: #1a1a1a;
+    .sidebar-link {
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-link:hover, .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-3d {
+        transform-style: preserve-3d;
+        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .card-3d:hover {
+        transform: translateY(-5px);
+    }
+    
+    .btn-3d {
+        position: relative;
+        transform-style: preserve-3d;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .btn-3d:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .loading-spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 3px solid #fff;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .text-gradient {
+        background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .danger-gradient {
+        background: linear-gradient(135deg, #DC143C, #FF6347);
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .shake {
+        animation: shake 0.5s ease-in-out;
+    }
+
+    /* Mobile-first responsive design */
+    .sidebar {
+        width: 64px;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar:hover .sidebar-text,
+    .sidebar.expanded .sidebar-text {
+        opacity: 1;
+    }
+    
+    main {
+        margin-left: 64px;
+        transition: margin-left 0.3s ease;
+        padding: 1rem;
+    }
+
+    /* Desktop styles */
+    @media (min-width: 1024px) {
+        .sidebar {
+            width: 256px;
         }
         
-        * {
-            scroll-behavior: smooth;
+        .sidebar-text {
+            opacity: 1;
         }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-        
-        .hero-gradient {
-            background: linear-gradient(135deg, 
-                rgba(34, 139, 34, 0.95) 0%, 
-                rgba(34, 139, 34, 0.8) 50%, 
-                rgba(220, 20, 60, 0.8) 100%);
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .card-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        main {
+            margin-left: 256px;
+            padding: 2rem;
         }
         
         .card-3d:hover {
             transform: translateY(-5px);
         }
-        
-        .btn-3d {
-            position: relative;
-            transform-style: preserve-3d;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .btn-3d:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        
-        .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .text-gradient {
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .danger-gradient {
-            background: linear-gradient(135deg, #DC143C, #FF6347);
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .card-3d:hover {
-                transform: none;
-            }
-        }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-primary shadow-lg transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-r from-secondary to-yellow-300 rounded-full flex items-center justify-center text-dark font-bold text-lg">
-                        ⚙️
-                    </div>
-                    <span class="text-xl font-bold text-white">BueaDelights Admin</span>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="{% url 'backend:admin_dashboard' %}" class="text-white hover:text-secondary transition-colors">Dashboard</a>
-                    <a href="{% url 'backend:admin_products' %}" class="text-white hover:text-secondary transition-colors">Products</a>
-                    <a href="{% url 'backend:admin_orders' %}" class="text-white hover:text-secondary transition-colors">Orders</a>
-                    <a href="{% url 'backend:admin_logout' %}" class="text-white hover:text-secondary transition-colors">Logout</a>
-                </div>
-                
-                <button class="md:hidden text-white" id="mobile-menu-btn">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div class="md:hidden bg-primary/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="{% url 'backend:admin_dashboard' %}" class="block px-3 py-2 text-white hover:text-secondary">Dashboard</a>
-                <a href="{% url 'backend:admin_products' %}" class="block px-3 py-2 text-white hover:text-secondary">Products</a>
-                <a href="{% url 'backend:admin_orders' %}" class="block px-3 py-2 text-white hover:text-secondary">Orders</a>
-                <a href="{% url 'backend:admin_logout' %}" class="block px-3 py-2 text-white hover:text-secondary">Logout</a>
-            </div>
-        </div>
-    </nav>
+    }
 
-    <!-- Main Content -->
-    <section class="pt-32 pb-20 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12" data-aos="fade-up">
-                <h1 class="text-4xl md:text-5xl font-display font-bold text-dark mb-4">
+    /* Tablet styles */
+    @media (max-width: 1023px) and (min-width: 769px) {
+        .sidebar {
+            width: 80px;
+        }
+        
+        .sidebar:hover {
+            width: 256px;
+            z-index: 60;
+        }
+        
+        .sidebar:hover .sidebar-text {
+            opacity: 1;
+        }
+        
+        main {
+            margin-left: 80px;
+            padding: 1.5rem;
+        }
+        
+        .product-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 256px;
+            transform: translateX(-100%);
+            z-index: 50;
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.95) 100%);
+        }
+        
+        .sidebar.mobile-open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-text {
+            opacity: 1;
+        }
+        
+        main {
+            margin-left: 0;
+            padding: 1rem;
+        }
+        
+        .product-info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1rem;
+        }
+        
+        .card-3d {
+            padding: 1rem;
+        }
+        
+        .card-3d:hover {
+            transform: none;
+        }
+        
+        .flex.justify-between.items-center {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .flex.space-x-4 {
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        
+        .flex.space-x-4 > * {
+            margin: 0;
+            width: 100%;
+        }
+        
+        .max-w-3xl {
+            max-width: 100%;
+        }
+    }
+
+    /* Small mobile styles */
+    @media (max-width: 480px) {
+        main {
+            padding: 0.75rem;
+        }
+        
+        .card-3d {
+            padding: 0.75rem;
+        }
+        
+        .header-title {
+            font-size: 1.25rem;
+        }
+        
+        .header-subtitle {
+            font-size: 0.875rem;
+        }
+        
+        .flex.space-x-2 {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .flex.space-x-2 > * {
+            margin: 0;
+            width: 100%;
+        }
+    }
+
+    /* Touch-friendly elements */
+    @media (hover: none) and (pointer: coarse) {
+        .btn-3d {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .sidebar-link {
+            min-height: 48px;
+        }
+    }
+
+    /* Warning alert styles */
+    .warning-alert {
+        background: linear-gradient(135deg, #fef3cd 0%, #fff3cd 100%);
+        border-left: 4px solid #f59e0b;
+    }
+    
+    .warning-alert.danger {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-left: 4px solid #ef4444;
+    }
+
+    /* Product image styles */
+    .product-image {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .product-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+        pointer-events: none;
+    }
+
+    /* Breadcrumb responsive */
+    .breadcrumb {
+        font-size: 0.875rem;
+    }
+    
+    @media (max-width: 480px) {
+        .breadcrumb {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile Sidebar Toggle -->
+<button class="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-3 rounded-lg shadow-lg touch-manipulation" id="mobileMenuToggle" aria-label="Toggle menu">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden" id="mobileOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar admin-sidebar min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl bg-gradient-to-b from-primary to-green-800">
+    <div class="p-6">
+        <div class="flex items-center space-x-3 mb-8">
+            <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
+                🍽️
+            </div>
+            <div class="sidebar-text">
+                <h1 class="text-xl font-bold">BueaDelights</h1>
+                <p class="text-sm text-green-200">Admin Panel</p>
+            </div>
+        </div>
+        
+        <nav class="space-y-2">
+            <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"/>
+                </svg>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <span class="sidebar-text">Orders</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_products' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/10 touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span class="sidebar-text">Products</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                <span class="sidebar-text">Categories</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span class="sidebar-text">Messages</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span class="sidebar-text">Catering</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span class="sidebar-text">Analytics</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="sidebar-text">Settings</span>
+            </a>
+        </nav>
+    </div>
+    
+    <div class="absolute bottom-6 left-6 right-6">
+        <div class="border-t border-white/20 pt-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                    A
+                </div>
+                <div class="sidebar-text min-w-0">
+                    <div class="font-semibold truncate">Admin User</div>
+                    <div class="text-sm text-green-200">Administrator</div>
+                </div>
+            </div>
+            <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block touch-manipulation">
+                <span class="sidebar-text">Logout</span>
+                <span class="sidebar-icon lg:hidden">🚪</span>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="min-h-screen">
+    <!-- Header -->
+    <header class="mb-6 lg:mb-8" data-aos="fade-down">
+        <div class="flex justify-between items-center">
+            <div>
+                <nav class="mb-4">
+                    <ol class="breadcrumb flex space-x-2 text-gray-600">
+                        <li><a href="{% url 'backend:admin_dashboard' %}" class="hover:text-primary transition-colors touch-manipulation">Dashboard</a></li>
+                        <li>/</li>
+                        <li><a href="{% url 'backend:admin_products' %}" class="hover:text-primary transition-colors touch-manipulation">Products</a></li>
+                        <li>/</li>
+                        <li class="text-accent">Delete</li>
+                    </ol>
+                </nav>
+                <h1 class="header-title text-2xl lg:text-4xl font-display font-bold text-dark">
                     Delete <span class="text-gradient">Product</span>
                 </h1>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                <p class="header-subtitle text-base lg:text-xl text-gray-600 mt-2">
                     Confirm deletion of this product from the menu
                 </p>
             </div>
+        </div>
+    </header>
+    
+    <div class="max-w-3xl mx-auto">
+        <div class="card-3d bg-white rounded-2xl lg:rounded-3xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+            <div class="p-4 lg:p-6 border-b border-gray-200">
+                <h2 class="text-xl lg:text-2xl font-bold text-dark flex items-center">
+                    <svg class="w-5 h-5 lg:w-6 lg:h-6 text-accent mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    Confirm Deletion
+                </h2>
+            </div>
             
-            <div class="max-w-3xl mx-auto">
-                <div class="card-3d bg-white rounded-3xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="100">
-                    <div class="p-6 border-b border-gray-200">
-                        <h2 class="text-2xl font-bold text-dark flex items-center">
-                            <svg class="w-6 h-6 text-accent mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            Confirm Deletion
-                        </h2>
+            <div class="p-4 lg:p-6">
+                <div class="product-info-grid grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 items-center mb-6 lg:mb-8">
+                    <div class="md:col-span-1">
+                        <div class="product-image w-full h-48 lg:h-64 rounded-xl overflow-hidden">
+                            {% if object.image %}
+                                <img src="{{ object.image.url }}" alt="{{ object.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white text-4xl lg:text-6xl">
+                                    🍲
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    
-                    <div class="p-6">
-                        <div class="flex flex-col md:flex-row gap-8 items-center mb-8">
-                            <div class="w-full md:w-1/3">
-                                {% if object.image %}
-                                    <img src="{{ object.image.url }}" alt="{{ object.name }}" class="w-full h-48 object-cover rounded-xl">
-                                {% else %}
-                                    <div class="w-full h-48 bg-gradient-to-br from-primary to-green-600 rounded-xl flex items-center justify-center text-white text-6xl">
-                                        🍲
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="w-full md:w-2/3">
-                                <h3 class="text-2xl font-bold text-dark mb-2">{{ object.name }}</h3>
-                                <p class="text-gray-600 mb-4">{{ object.description|truncatewords:20 }}</p>
-                                <div class="flex items-center space-x-4">
-                                    <span class="text-xl font-bold text-primary">{{ object.price|floatformat:0 }} FCFA</span>
-                                    <span class="text-sm bg-gray-100 px-3 py-1 rounded-full">
-                                        {{ object.category.name }}
-                                    </span>
-                                </div>
-                                <div class="mt-4">
-                                    <span class="text-sm {% if object.is_available %}text-green-600{% else %}text-red-600{% endif %}">
-                                        {% if object.is_available %}Available{% else %}Unavailable{% endif %}
-                                    </span>
-                                    {% if object.is_featured %}
-                                        <span class="ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured</span>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-xl lg:text-2xl font-bold text-dark mb-2">{{ object.name }}</h3>
+                        <p class="text-gray-600 mb-4 text-sm lg:text-base">{{ object.description|truncatewords:20 }}</p>
+                        <div class="flex flex-wrap items-center gap-2 lg:gap-4 mb-4">
+                            <span class="text-lg lg:text-xl font-bold text-primary">{{ object.price|floatformat:0 }} FCFA</span>
+                            <span class="text-xs lg:text-sm bg-gray-100 px-2 lg:px-3 py-1 rounded-full">
+                                {{ object.category.name }}
+                            </span>
                         </div>
-                        
-                        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-red-800">Warning</h3>
-                                    <div class="mt-2 text-sm text-red-700">
-                                        <p>
-                                            Are you sure you want to delete this product? This action cannot be undone. 
-                                            Any orders containing this product will retain it in their order history.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs lg:text-sm {% if object.is_available %}text-green-600{% else %}text-red-600{% endif %} font-medium">
+                                {% if object.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                            {% if object.is_featured %}
+                                <span class="text-xs lg:text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured</span>
+                            {% endif %}
+                            <span class="text-xs lg:text-sm text-gray-500">Stock: {{ object.stock_quantity|default:0 }}</span>
                         </div>
-                        
-                        <form method="POST">
-                            {% csrf_token %}
-                            <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
-                                <a href="{% url 'backend:admin_products' %}" class="btn-3d bg-gray-200 text-gray-800 px-6 py-3 rounded-full font-semibold hover:bg-gray-300 transition-all text-center">
-                                    Cancel
-                                </a>
-                                <button type="submit" class="btn-3d danger-gradient text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition-all flex items-center justify-center" id="delete-btn">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    Confirm Delete
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
+                
+                <div class="warning-alert danger p-4 lg:p-6 mb-6 lg:mb-8 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm lg:text-base font-medium text-red-800">Warning</h3>
+                            <div class="mt-2 text-xs lg:text-sm text-red-700">
+                                <p>
+                                    Are you sure you want to delete this product? This action cannot be undone. 
+                                    Any orders containing this product will retain it in their order history.
+                                </p>
+                                <p class="mt-2 font-medium">
+                                    Product will be permanently removed from your menu and cannot be recovered.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" id="deleteForm">
+                    {% csrf_token %}
+                    <div class="flex space-x-2">
+                        <a href="{% url 'backend:admin_products' %}" class="flex-1 btn-3d bg-gray-200 text-gray-800 px-4 lg:px-6 py-3 rounded-lg lg:rounded-full font-semibold hover:bg-gray-300 transition-all text-center touch-manipulation">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Cancel
+                        </a>
+                        <button type="submit" class="flex-1 btn-3d danger-gradient text-white px-4 lg:px-6 py-3 rounded-lg lg:rounded-full font-semibold hover:shadow-lg transition-all flex items-center justify-center touch-manipulation" id="delete-btn">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Confirm Delete</span>
+                            <span class="sm:hidden">Delete</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </section>
+    </div>
+</main>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-500 text-sm">
-                © 2025 BueaDelights Admin Panel. All rights reserved.
-            </p>
-        </div>
-    </footer>
+{% block extra_scripts %}
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // Initialize AOS animation library
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-quad',
+        once: true
+    });
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Initialize AOS animation library
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-quad',
-            once: true
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('{% static "sw.js" %}')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
         });
+    }
 
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+    // Mobile sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const sidebar = document.querySelector('.sidebar');
         
-        mobileMenuBtn.addEventListener('click', () => {
-            if (mobileMenu.style.display === 'block') {
-                mobileMenu.style.display = 'none';
-            } else {
-                mobileMenu.style.display = 'block';
-            }
-        });
-
-        // Delete button confirmation
-        document.getElementById('delete-btn').addEventListener('click', function(e) {
-            // Add shake animation for emphasis
-            this.classList.add('shake');
+        if (mobileMenuToggle && mobileOverlay && sidebar) {
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('hidden');
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            });
             
-            // Remove the animation class after it completes
+            mobileOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+            
+            // Close sidebar when clicking on a link
+            const sidebarLinks = sidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileOverlay.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        }
+    });
+
+    // Delete button confirmation and loading
+    document.getElementById('delete-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Add shake animation for emphasis
+        this.classList.add('shake');
+        
+        // Remove the animation class after it completes
+        setTimeout(() => {
+            this.classList.remove('shake');
+        }, 500);
+        
+        // Show confirmation dialog
+        if (confirm('Are you absolutely sure you want to delete this product? This action cannot be undone.')) {
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<div class="loading-spinner inline-block mr-2"></div> Deleting...';
+            this.disabled = true;
+            
+            // Submit the form
+            document.getElementById('deleteForm').submit();
+        }
+    });
+
+    // Prevent accidental form submission
+    document.getElementById('deleteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // This will be handled by the button click event
+        const deleteBtn = document.getElementById('delete-btn');
+        deleteBtn.click();
+    });
+
+    // Touch gestures for sidebar
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleGesture();
+    });
+    
+    function handleGesture() {
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        if (touchEndX < touchStartX - 50 && sidebar.classList.contains('mobile-open')) {
+            // Swipe left to close sidebar
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        if (touchEndX > touchStartX + 50 && !sidebar.classList.contains('mobile-open') && touchStartX < 50) {
+            // Swipe right from edge to open sidebar
+            sidebar.classList.add('mobile-open');
+            mobileOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Add accessibility features
+    document.addEventListener('keydown', function(e) {
+        // Allow ESC to cancel deletion
+        if (e.key === 'Escape') {
+            const deleteForm = document.getElementById('deleteForm');
+            if (deleteForm && !deleteForm.classList.contains('loading')) {
+                window.location.href = "{% url 'backend:admin_products' %}";
+            }
+        }
+        
+        // Allow Enter to confirm deletion (with extra confirmation)
+        if (e.key === 'Enter' && e.target.id === 'delete-btn') {
+            e.preventDefault();
+            e.target.click();
+        }
+    });
+
+    // Add visual feedback for touch interactions
+    document.querySelectorAll('.touch-manipulation').forEach(element => {
+        element.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        element.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+        
+        element.addEventListener('touchcancel', function() {
+            this.style.transform = '';
+        });
+    });
+
+    // Handle network status for PWA
+    function updateOnlineStatus() {
+        if (!navigator.onLine) {
+            // Show offline message
+            const offlineMessage = document.createElement('div');
+            offlineMessage.className = 'fixed top-0 left-0 right-0 bg-red-500 text-white text-center py-2 z-50';
+            offlineMessage.textContent = 'You are offline. Please check your connection.';
+            document.body.appendChild(offlineMessage);
+            
+            // Disable form submission when offline
+            document.getElementById('delete-btn').disabled = true;
+            
             setTimeout(() => {
-                this.classList.remove('shake');
-            }, 500);
-            
-            // Optional: Confirm before submitting
-            if (!confirm('Are you absolutely sure you want to delete this product?')) {
-                e.preventDefault();
-            } else {
-                // Show loading state
-                const originalText = this.innerHTML;
-                this.innerHTML = '<div class="loading-spinner"></div> Deleting...';
-                this.disabled = true;
+                offlineMessage.remove();
+            }, 5000);
+        } else {
+            // Re-enable form submission when online
+            const deleteBtn = document.getElementById('delete-btn');
+            if (!deleteBtn.innerHTML.includes('Deleting')) {
+                deleteBtn.disabled = false;
             }
-        });
-
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                navbar.classList.add('shadow-lg');
-                navbar.classList.add('bg-primary');
-            } else {
-                navbar.classList.remove('shadow-lg');
-                navbar.classList.remove('bg-primary');
-            }
-        });
-    </script>
-</body>
-</html>
+        }
+    }
+    
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+</script>
+{% endblock %}

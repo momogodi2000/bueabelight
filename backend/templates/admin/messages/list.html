@@ -1,838 +1,774 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages & Inquiries - BueaDelights Admin</title>
-    <meta name="description" content="Manage customer messages and contact inquiries">
+
+{% block title %}Messages & Inquiries - BueaDelights Admin{% endblock %}
+{% block description %}Manage customer messages and contact inquiries{% endblock %}
+
+{% block extra_css %}
+<style>
+    .message-card {
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-left: 4px solid transparent;
+    }
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#228B22">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    .message-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    .message-card.unread {
+        border-left-color: var(--primary);
+        background: rgba(34, 139, 34, 0.02);
+    }
     
-    <!-- Custom Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#228B22',
-                        'secondary': '#FFD700',
-                        'accent': '#DC143C',
-                        'dark': '#1a1a1a'
-                    },
-                    fontFamily: {
-                        'display': ['Georgia', 'serif'],
-                        'body': ['Inter', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    .message-card.read {
+        border-left-color: #e5e7eb;
+    }
     
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    .message-card.priority {
+        border-left-color: var(--accent);
+        background: rgba(220, 20, 60, 0.02);
+    }
     
-    <!-- Custom Styles -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .btn-3d {
-            position: relative;
-            transform-style: preserve-3d;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .btn-3d:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        
-        .admin-sidebar {
-            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
-        }
-        
-        .sidebar-link {
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-link:hover, .sidebar-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-        
+    .filter-badge {
+        transition: all 0.3s ease;
+    }
+    
+    .filter-badge.active {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .notification-badge {
+        animation: pulse 2s infinite;
+    }
+    
+    .message-preview {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .priority-indicator {
+        background: linear-gradient(45deg, var(--accent), #ff6b6b);
+        animation: pulse 2s infinite;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
         .message-card {
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-left: 4px solid transparent;
+            padding: 1rem;
         }
         
         .message-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         }
         
-        .message-card.unread {
-            border-left-color: var(--primary);
-            background: rgba(34, 139, 34, 0.02);
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
         
-        .message-card.read {
-            border-left-color: #e5e7eb;
+        .message-actions {
+            flex-direction: column;
+            gap: 0.5rem;
         }
         
-        .message-card.priority {
-            border-left-color: var(--accent);
-            background: rgba(220, 20, 60, 0.02);
+        .message-actions button {
+            width: 100%;
+            text-align: center;
         }
         
-        .floating-element {
-            animation: float 6s ease-in-out infinite;
+        .filter-container {
+            flex-direction: column;
+            gap: 1rem;
         }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-15px) rotate(1deg); }
-            66% { transform: translateY(-8px) rotate(-1deg); }
+        .filter-badges {
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
         
-        .filter-badge {
-            transition: all 0.3s ease;
+        .search-controls {
+            flex-direction: column;
+            gap: 0.5rem;
         }
         
-        .filter-badge.active {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.05);
+        .search-controls > * {
+            width: 100%;
         }
         
-        .notification-badge {
-            animation: pulse 2s infinite;
+        .message-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        
+        .quick-actions {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .header-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions button {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
         
         .message-preview {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            -webkit-line-clamp: 2;
         }
         
-        .priority-indicator {
-            background: linear-gradient(45deg, var(--accent), #ff6b6b);
-            animation: pulse 2s infinite;
+        .filter-badges {
+            justify-content: center;
         }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-gray-100 to-gray-200">
-    <div class="flex">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl">
-            <div class="p-6">
-                <div class="flex items-center space-x-3 mb-8">
-                    <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
-                        🍽️
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold">BueaDelights</h1>
-                        <p class="text-sm text-green-200">Admin Panel</p>
-                    </div>
-                </div>
-                
-                <nav class="space-y-2">
-                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
-                        </svg>
-                        <span>Dashboard</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        <span>Orders</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        <span>Products</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                        </svg>
-                        <span>Categories</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                        <span>Messages</span>
-                        <span class="notification-badge bg-accent text-white text-xs px-2 py-1 rounded-full">3</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span>Catering</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        <span>Analytics</span>
-                    </a>
-                    
-                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Settings</span>
-                    </a>
-                </nav>
-            </div>
-            
-            <div class="absolute bottom-6 left-6 right-6">
-                <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block">
-                    Logout
-                </a>
-            </div>
-        </aside>
         
-        <!-- Main Content -->
-        <main class="ml-64 flex-1 p-8 relative">
-            <!-- Floating Background Elements -->
-            <div class="fixed inset-0 pointer-events-none overflow-hidden">
-                <div class="floating-element absolute top-20 right-20 w-32 h-32 bg-primary/5 rounded-full"></div>
-                <div class="floating-element absolute bottom-40 left-1/3 w-24 h-24 bg-secondary/10 rounded-full"></div>
-                <div class="floating-element absolute top-1/2 right-1/4 w-16 h-16 bg-accent/5 rounded-full"></div>
-            </div>
-            
-            <!-- Header -->
-            <header class="mb-8 relative z-10" data-aos="fade-down">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-4xl font-display font-bold text-dark">Messages & Inquiries</h1>
-                        <p class="text-xl text-gray-600 mt-2">Manage customer messages and contact requests</p>
-                    </div>
-                    
-                    <div class="flex space-x-4">
-                        <button onclick="markAllRead()" class="btn-3d bg-secondary text-dark px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            Mark All Read
-                        </button>
-                        <button onclick="exportMessages()" class="btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                            </svg>
-                            Export
-                        </button>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 relative z-10">
-                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-600 text-sm font-medium">Total Messages</p>
-                            <p class="text-3xl font-bold text-dark">{{ total_messages|default:47 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl">
-                            💬
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-600 text-sm font-medium">Unread</p>
-                            <p class="text-3xl font-bold text-accent">{{ unread_count|default:3 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-xl">
-                            📩
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-600 text-sm font-medium">Today</p>
-                            <p class="text-3xl font-bold text-primary">8</p>
-                        </div>
-                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xl">
-                            📅
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-600 text-sm font-medium">Avg Response Time</p>
-                            <p class="text-2xl font-bold text-primary">2.5 hrs</p>
-                        </div>
-                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl">
-                            ⏱️
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Filters and Search -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg mb-8 relative z-10" data-aos="fade-up" data-aos-delay="500">
-                <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-                    <div class="flex flex-wrap gap-2">
-                        <button class="filter-badge active px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="all">
-                            All Messages
-                        </button>
-                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="unread">
-                            Unread (3)
-                        </button>
-                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="read">
-                            Read
-                        </button>
-                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="priority">
-                            Priority
-                        </button>
-                        <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="today">
-                            Today
-                        </button>
-                    </div>
-                    
-                    <div class="flex space-x-4">
-                        <div class="relative">
-                            <input type="text" id="search-messages" placeholder="Search messages..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                        
-                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <option value="">All Types</option>
-                            <option value="general">General Inquiry</option>
-                            <option value="order">Order Support</option>
-                            <option value="complaint">Complaint</option>
-                            <option value="suggestion">Suggestion</option>
-                        </select>
-                        
-                        <input type="date" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Messages List -->
-            <div class="space-y-4 relative z-10" id="messages-list">
-                <!-- Priority Message -->
-                <div class="message-card priority rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="600">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-lg">
-                                CM
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-dark flex items-center">
-                                    Catherine Muna
-                                    <span class="priority-indicator ml-2 px-2 py-1 text-xs text-white font-bold rounded-full">
-                                        URGENT
-                                    </span>
-                                </h3>
-                                <p class="text-sm text-gray-600">catherinem@email.com • +237 6 78 90 12 34</p>
-                                <p class="text-xs text-gray-500">2 hours ago • Complaint</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="markAsRead(1)" class="btn-3d bg-green-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-sm">
-                                Mark Read
-                            </button>
-                            <button onclick="replyToMessage(1)" class="btn-3d bg-primary text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm">
-                                Reply
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="font-semibold text-dark mb-2">Order Never Delivered - Need Immediate Refund</h4>
-                        <div class="message-preview text-gray-700">
-                            I placed an order #BDL24051 yesterday at 2:00 PM for delivery to Molyko. The order was marked as "delivered" but I never received anything. I've been trying to call your number but no response. This is extremely disappointing and I need my money back immediately. I trusted your service and feel completely let down. Please resolve this urgently as I have guests coming and was depending on this food.
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex space-x-4 text-sm text-gray-600">
-                            <span>📍 Molyko, Buea</span>
-                            <span>📞 Attempted to call</span>
-                            <span>💰 Refund Requested</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="callCustomer('+237678901234')" class="text-primary hover:text-green-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                            </button>
-                            <button onclick="messageCustomer('+237678901234')" class="text-green-500 hover:text-green-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                                </svg>
-                            </button>
-                            <button onclick="archiveMessage(1)" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Unread Message -->
-                <div class="message-card unread rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="700">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg">
-                                JT
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-dark flex items-center">
-                                    John Tanyi
-                                    <span class="ml-2 w-2 h-2 bg-primary rounded-full"></span>
-                                </h3>
-                                <p class="text-sm text-gray-600">j.tanyi@gmail.com • +237 6 55 44 33 22</p>
-                                <p class="text-xs text-gray-500">4 hours ago • General Inquiry</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="markAsRead(2)" class="btn-3d bg-green-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-sm">
-                                Mark Read
-                            </button>
-                            <button onclick="replyToMessage(2)" class="btn-3d bg-primary text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm">
-                                Reply
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="font-semibold text-dark mb-2">Catering for University Event</h4>
-                        <div class="message-preview text-gray-700">
-                            Good day! I'm organizing a student event at the University of Buea next month and would like to inquire about your catering services. We're expecting about 150 students and need traditional Cameroonian dishes. Could you please send me your catering menu and pricing? Also, do you deliver to the university campus?
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex space-x-4 text-sm text-gray-600">
-                            <span>🎓 University Event</span>
-                            <span>👥 150 people</span>
-                            <span>🍽️ Catering Inquiry</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="callCustomer('+237655443322')" class="text-primary hover:text-green-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                            </button>
-                            <button onclick="messageCustomer('+237655443322')" class="text-green-500 hover:text-green-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                                </svg>
-                            </button>
-                            <button onclick="archiveMessage(2)" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Unread Message -->
-                <div class="message-card unread rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="800">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">
-                                MF
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-dark flex items-center">
-                                    Marie Fonge
-                                    <span class="ml-2 w-2 h-2 bg-primary rounded-full"></span>
-                                </h3>
-                                <p class="text-sm text-gray-600">marie.f@email.com • +237 6 99 88 77 66</p>
-                                <p class="text-xs text-gray-500">6 hours ago • Suggestion</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="markAsRead(3)" class="btn-3d bg-green-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-sm">
-                                Mark Read
-                            </button>
-                            <button onclick="replyToMessage(3)" class="btn-3d bg-primary text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm">
-                                Reply
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="font-semibold text-dark mb-2">Suggestion for New Menu Items</h4>
-                        <div class="message-preview text-gray-700">
-                            Hello BueaDelights team! I love ordering from you regularly and wanted to suggest adding some new items to your menu. Could you consider adding Koki beans, Ekwang, and maybe some vegetarian options? Many of my friends are vegetarians and would love to order from you. Also, what about having a weekly special or combo meals? Keep up the great work!
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex space-x-4 text-sm text-gray-600">
-                            <span>💡 Menu Suggestion</span>
-                            <span>🌱 Vegetarian Options</span>
-                            <span>😊 Positive Feedback</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="callCustomer('+237699887766')" class="text-primary hover:text-green-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                            </button>
-                            <button onclick="messageCustomer('+237699887766')" class="text-green-500 hover:text-green-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                                </svg>
-                            </button>
-                            <button onclick="archiveMessage(3)" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Read Message -->
-                <div class="message-card read rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="900">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold text-lg">
-                                PK
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-dark">Paul Kum</h3>
-                                <p class="text-sm text-gray-600">paul.kum@example.com • +237 6 77 66 55 44</p>
-                                <p class="text-xs text-gray-500">1 day ago • Order Support • Resolved</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                Resolved
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="font-semibold text-dark mb-2">Thank You for Quick Service</h4>
-                        <div class="message-preview text-gray-700">
-                            I just wanted to say thank you for the excellent service yesterday. The Ndolé was absolutely delicious and arrived exactly on time. This is why I keep coming back to BueaDelights. Keep up the great work!
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex space-x-4 text-sm text-gray-600">
-                            <span>⭐ 5-Star Review</span>
-                            <span>😊 Positive Feedback</span>
-                            <span>🍲 Ndolé Order</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="archiveMessage(4)" class="text-gray-500 hover:text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Load More Button -->
-            <div class="text-center mt-12 relative z-10" data-aos="fade-up">
-                <button onclick="loadMoreMessages()" class="btn-3d bg-white border-2 border-primary text-primary px-8 py-4 rounded-full font-semibold hover:bg-primary hover:text-white transition-all">
-                    Load More Messages
-                </button>
-            </div>
-        </main>
-    </div>
+        .message-card .contact-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+    }
+</style>
+{% endblock %}
 
-    <!-- Reply Modal -->
-    <div id="replyModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl mx-4 w-full max-h-[90vh] overflow-y-auto" data-aos="zoom-in">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-dark">Reply to Message</h3>
-                <button onclick="closeReplyModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+{% block content %}
+<!-- Floating Background Elements -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="floating-element absolute top-20 right-20 w-32 h-32 bg-primary/5 rounded-full"></div>
+    <div class="floating-element absolute bottom-40 left-1/3 w-24 h-24 bg-secondary/10 rounded-full"></div>
+    <div class="floating-element absolute top-1/2 right-1/4 w-16 h-16 bg-accent/5 rounded-full"></div>
+</div>
+
+<!-- Header -->
+<header class="mb-6 lg:mb-8 relative z-10" data-aos="fade-down">
+    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-4xl font-display font-bold text-dark">Messages & Inquiries</h1>
+            <p class="text-lg lg:text-xl text-gray-600 mt-1 lg:mt-2">Manage customer messages and contact requests</p>
+        </div>
+        
+        <div class="header-actions flex flex-col sm:flex-row gap-2 lg:gap-4">
+            <button onclick="markAllRead()" class="btn-3d bg-secondary text-dark px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all text-sm lg:text-base">
+                <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Mark All Read
+            </button>
+            <button onclick="exportMessages()" class="btn-3d bg-primary text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm lg:text-base">
+                <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+                Export
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Stats Cards -->
+<div class="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8 relative z-10">
+    <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs lg:text-sm font-medium">Total Messages</p>
+                <p class="text-xl lg:text-3xl font-bold text-dark">{{ total_messages|default:47 }}</p>
             </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Reply Method</label>
-                    <div class="flex space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="reply_method" value="email" checked class="mr-2">
-                            <span>📧 Email</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="reply_method" value="whatsapp" class="mr-2">
-                            <span>💬 WhatsApp</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="reply_method" value="phone" class="mr-2">
-                            <span>📞 Phone Call</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div>
-                    <label for="reply-subject" class="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
-                    <input type="text" id="reply-subject" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Re: Your message">
-                </div>
-                
-                <div>
-                    <label for="reply-message" class="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                    <textarea id="reply-message" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Type your reply here..."></textarea>
-                </div>
-                
-                <div class="flex space-x-4">
-                    <button onclick="closeReplyModal()" class="flex-1 btn-3d bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
-                        Cancel
-                    </button>
-                    <button onclick="sendReply()" class="flex-1 btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
-                        Send Reply
-                    </button>
-                </div>
+            <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm lg:text-xl">
+                💬
             </div>
         </div>
     </div>
+    
+    <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs lg:text-sm font-medium">Unread</p>
+                <p class="text-xl lg:text-3xl font-bold text-accent">{{ unread_count|default:3 }}</p>
+            </div>
+            <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-sm lg:text-xl">
+                📩
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs lg:text-sm font-medium">Today</p>
+                <p class="text-xl lg:text-3xl font-bold text-primary">8</p>
+            </div>
+            <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-sm lg:text-xl">
+                📅
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs lg:text-sm font-medium">Avg Response Time</p>
+                <p class="text-lg lg:text-2xl font-bold text-primary">2.5 hrs</p>
+            </div>
+            <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm lg:text-xl">
+                ⏱️
+            </div>
+        </div>
+    </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-quad',
-            once: true
-        });
-
-        let currentMessageId = null;
-
-        // Filter functionality
-        const filterBadges = document.querySelectorAll('.filter-badge');
-        filterBadges.forEach(badge => {
-            badge.addEventListener('click', () => {
-                filterBadges.forEach(b => b.classList.remove('active'));
-                badge.classList.add('active');
-                
-                const filter = badge.dataset.filter;
-                filterMessages(filter);
-            });
-        });
-
-        function filterMessages(filter) {
-            const messages = document.querySelectorAll('.message-card');
-            messages.forEach(message => {
-                if (filter === 'all') {
-                    message.style.display = 'block';
-                } else if (filter === 'unread' && message.classList.contains('unread')) {
-                    message.style.display = 'block';
-                } else if (filter === 'read' && message.classList.contains('read')) {
-                    message.style.display = 'block';
-                } else if (filter === 'priority' && message.classList.contains('priority')) {
-                    message.style.display = 'block';
-                } else if (filter === 'today') {
-                    // Show messages from today (you can modify this logic)
-                    message.style.display = 'block';
-                } else {
-                    message.style.display = 'none';
-                }
-            });
-        }
-
-        // Search functionality
-        document.getElementById('search-messages').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const messages = document.querySelectorAll('.message-card');
+<!-- Filters and Search -->
+<div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg mb-6 lg:mb-8 relative z-10" data-aos="fade-up" data-aos-delay="500">
+    <div class="filter-container flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div class="filter-badges flex flex-wrap gap-2">
+            <button class="filter-badge active px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold bg-gray-100 text-gray-700" data-filter="all">
+                All Messages
+            </button>
+            <button class="filter-badge px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold bg-gray-100 text-gray-700" data-filter="unread">
+                Unread (3)
+            </button>
+            <button class="filter-badge px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold bg-gray-100 text-gray-700" data-filter="read">
+                Read
+            </button>
+            <button class="filter-badge px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold bg-gray-100 text-gray-700" data-filter="priority">
+                Priority
+            </button>
+            <button class="filter-badge px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold bg-gray-100 text-gray-700" data-filter="today">
+                Today
+            </button>
+        </div>
+        
+        <div class="search-controls flex flex-col sm:flex-row gap-2 lg:gap-4 w-full lg:w-auto">
+            <div class="relative">
+                <input type="text" id="search-messages" placeholder="Search messages..." 
+                       class="pl-8 lg:pl-10 pr-3 lg:pr-4 py-1.5 lg:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base w-full">
+                <svg class="w-4 h-4 lg:w-5 lg:h-5 text-gray-400 absolute left-2 lg:left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
             
-            messages.forEach(message => {
-                const messageText = message.textContent.toLowerCase();
-                if (messageText.includes(searchTerm)) {
-                    message.style.display = 'block';
-                } else {
-                    message.style.display = 'none';
-                }
-            });
-        });
+            <select class="px-3 lg:px-4 py-1.5 lg:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base">
+                <option value="">All Types</option>
+                <option value="general">General Inquiry</option>
+                <option value="order">Order Support</option>
+                <option value="complaint">Complaint</option>
+                <option value="suggestion">Suggestion</option>
+            </select>
+            
+            <input type="date" class="px-3 lg:px-4 py-1.5 lg:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base">
+        </div>
+    </div>
+</div>
 
-        // Mark as read
-        function markAsRead(messageId) {
-            const messageCard = document.querySelector(`[data-message-id="${messageId}"], .message-card:nth-child(${messageId})`);
-            if (messageCard) {
-                messageCard.classList.remove('unread');
-                messageCard.classList.add('read');
+<!-- Messages List -->
+<div class="space-y-3 lg:space-y-4 relative z-10" id="messages-list">
+    <!-- Priority Message -->
+    <div class="message-card priority rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="600">
+        <div class="message-meta flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+            <div class="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-sm lg:text-lg flex-shrink-0">
+                    CM
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-dark flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <span>Catherine Muna</span>
+                        <span class="priority-indicator px-2 py-0.5 text-xs text-white font-bold rounded-full">
+                            URGENT
+                        </span>
+                    </h3>
+                    <div class="contact-info flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs lg:text-sm text-gray-600">
+                        <span>catherinem@email.com</span>
+                        <span class="hidden sm:inline">•</span>
+                        <span>+237 6 78 90 12 34</span>
+                    </div>
+                    <p class="text-xs text-gray-500">2 hours ago • Complaint</p>
+                </div>
+            </div>
+            <div class="message-actions flex flex-col sm:flex-row gap-1 lg:gap-2 w-full sm:w-auto">
+                <button onclick="markAsRead(1)" class="btn-3d bg-green-500 text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-xs lg:text-sm">
+                    Mark Read
+                </button>
+                <button onclick="replyToMessage(1)" class="btn-3d bg-primary text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-xs lg:text-sm">
+                    Reply
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-3 lg:mb-4">
+            <h4 class="font-semibold text-dark mb-2 text-sm lg:text-base">Order Never Delivered - Need Immediate Refund</h4>
+            <div class="message-preview text-gray-700 text-sm lg:text-base">
+                I placed an order #BDL24051 yesterday at 2:00 PM for delivery to Molyko. The order was marked as "delivered" but I never received anything. I've been trying to call your number but no response. This is extremely disappointing and I need my money back immediately. I trusted your service and feel completely let down. Please resolve this urgently as I have guests coming and was depending on this food.
+            </div>
+        </div>
+        
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-4">
+            <div class="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
+                <span>📍 Molyko, Buea</span>
+                <span>📞 Attempted to call</span>
+                <span>💰 Refund Requested</span>
+            </div>
+            <div class="quick-actions flex gap-1 lg:gap-2">
+                <button onclick="callCustomer('+237678901234')" class="text-primary hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                </button>
+                <button onclick="messageCustomer('+237678901234')" class="text-green-500 hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                </button>
+                <button onclick="archiveMessage(1)" class="text-gray-500 hover:text-gray-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Unread Message -->
+    <div class="message-card unread rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="700">
+        <div class="message-meta flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+            <div class="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm lg:text-lg flex-shrink-0">
+                    JT
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-dark flex items-center gap-2">
+                        <span>John Tanyi</span>
+                        <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    </h3>
+                    <div class="contact-info flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs lg:text-sm text-gray-600">
+                        <span>j.tanyi@gmail.com</span>
+                        <span class="hidden sm:inline">•</span>
+                        <span>+237 6 55 44 33 22</span>
+                    </div>
+                    <p class="text-xs text-gray-500">4 hours ago • General Inquiry</p>
+                </div>
+            </div>
+            <div class="message-actions flex flex-col sm:flex-row gap-1 lg:gap-2 w-full sm:w-auto">
+                <button onclick="markAsRead(2)" class="btn-3d bg-green-500 text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-xs lg:text-sm">
+                    Mark Read
+                </button>
+                <button onclick="replyToMessage(2)" class="btn-3d bg-primary text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-xs lg:text-sm">
+                    Reply
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-3 lg:mb-4">
+            <h4 class="font-semibold text-dark mb-2 text-sm lg:text-base">Catering for University Event</h4>
+            <div class="message-preview text-gray-700 text-sm lg:text-base">
+                Good day! I'm organizing a student event at the University of Buea next month and would like to inquire about your catering services. We're expecting about 150 students and need traditional Cameroonian dishes. Could you please send me your catering menu and pricing? Also, do you deliver to the university campus?
+            </div>
+        </div>
+        
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-4">
+            <div class="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
+                <span>🎓 University Event</span>
+                <span>👥 150 people</span>
+                <span>🍽️ Catering Inquiry</span>
+            </div>
+            <div class="quick-actions flex gap-1 lg:gap-2">
+                <button onclick="callCustomer('+237655443322')" class="text-primary hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                </button>
+                <button onclick="messageCustomer('+237655443322')" class="text-green-500 hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                </button>
+                <button onclick="archiveMessage(2)" class="text-gray-500 hover:text-gray-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Another Unread Message -->
+    <div class="message-card unread rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="800">
+        <div class="message-meta flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+            <div class="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm lg:text-lg flex-shrink-0">
+                    MF
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-dark flex items-center gap-2">
+                        <span>Marie Fonge</span>
+                        <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    </h3>
+                    <div class="contact-info flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs lg:text-sm text-gray-600">
+                        <span>marie.f@email.com</span>
+                        <span class="hidden sm:inline">•</span>
+                        <span>+237 6 99 88 77 66</span>
+                    </div>
+                    <p class="text-xs text-gray-500">6 hours ago • Suggestion</p>
+                </div>
+            </div>
+            <div class="message-actions flex flex-col sm:flex-row gap-1 lg:gap-2 w-full sm:w-auto">
+                <button onclick="markAsRead(3)" class="btn-3d bg-green-500 text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-600 transition-all text-xs lg:text-sm">
+                    Mark Read
+                </button>
+                <button onclick="replyToMessage(3)" class="btn-3d bg-primary text-white px-2 lg:px-3 py-1 lg:py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-xs lg:text-sm">
+                    Reply
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-3 lg:mb-4">
+            <h4 class="font-semibold text-dark mb-2 text-sm lg:text-base">Suggestion for New Menu Items</h4>
+            <div class="message-preview text-gray-700 text-sm lg:text-base">
+                Hello BueaDelights team! I love ordering from you regularly and wanted to suggest adding some new items to your menu. Could you consider adding Koki beans, Ekwang, and maybe some vegetarian options? Many of my friends are vegetarians and would love to order from you. Also, what about having a weekly special or combo meals? Keep up the great work!
+            </div>
+        </div>
+        
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-4">
+            <div class="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
+                <span>💡 Menu Suggestion</span>
+                <span>🌱 Vegetarian Options</span>
+                <span>😊 Positive Feedback</span>
+            </div>
+            <div class="quick-actions flex gap-1 lg:gap-2">
+                <button onclick="callCustomer('+237699887766')" class="text-primary hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                </button>
+                <button onclick="messageCustomer('+237699887766')" class="text-green-500 hover:text-green-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                </button>
+                <button onclick="archiveMessage(3)" class="text-gray-500 hover:text-gray-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Read Message -->
+    <div class="message-card read rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="900">
+        <div class="message-meta flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+            <div class="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold text-sm lg:text-lg flex-shrink-0">
+                    PK
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-dark">Paul Kum</h3>
+                    <div class="contact-info flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs lg:text-sm text-gray-600">
+                        <span>paul.kum@example.com</span>
+                        <span class="hidden sm:inline">•</span>
+                        <span>+237 6 77 66 55 44</span>
+                    </div>
+                    <p class="text-xs text-gray-500">1 day ago • Order Support • Resolved</p>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <span class="bg-green-100 text-green-800 px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm font-semibold">
+                    Resolved
+                </span>
+            </div>
+        </div>
+        
+        <div class="mb-3 lg:mb-4">
+            <h4 class="font-semibold text-dark mb-2 text-sm lg:text-base">Thank You for Quick Service</h4>
+            <div class="message-preview text-gray-700 text-sm lg:text-base">
+                I just wanted to say thank you for the excellent service yesterday. The Ndolé was absolutely delicious and arrived exactly on time. This is why I keep coming back to BueaDelights. Keep up the great work!
+            </div>
+        </div>
+        
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-4">
+            <div class="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
+                <span>⭐ 5-Star Review</span>
+                <span>😊 Positive Feedback</span>
+                <span>🍲 Ndolé Order</span>
+            </div>
+            <div class="quick-actions flex gap-1 lg:gap-2">
+                <button onclick="archiveMessage(4)" class="text-gray-500 hover:text-gray-700 p-1">
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l6 6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load More Button -->
+<div class="text-center mt-8 lg:mt-12 relative z-10" data-aos="fade-up">
+    <button onclick="loadMoreMessages()" class="btn-3d bg-white border-2 border-primary text-primary px-6 lg:px-8 py-3 lg:py-4 rounded-full font-semibold hover:bg-primary hover:text-white transition-all text-sm lg:text-base">
+        Load More Messages
+    </button>
+</div>
+
+<!-- Reply Modal -->
+<div id="replyModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl lg:rounded-2xl p-6 lg:p-8 max-w-2xl mx-auto w-full max-h-[90vh] overflow-y-auto" data-aos="zoom-in">
+        <div class="flex justify-between items-center mb-4 lg:mb-6">
+            <h3 class="text-xl lg:text-2xl font-bold text-dark">Reply to Message</h3>
+            <button onclick="closeReplyModal()" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Reply Method</label>
+                <div class="flex flex-wrap gap-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="reply_method" value="email" checked class="mr-2">
+                        <span class="text-sm lg:text-base">📧 Email</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="reply_method" value="whatsapp" class="mr-2">
+                        <span class="text-sm lg:text-base">💬 WhatsApp</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="reply_method" value="phone" class="mr-2">
+                        <span class="text-sm lg:text-base">📞 Phone Call</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div>
+                <label for="reply-subject" class="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
+                <input type="text" id="reply-subject" 
+                       class="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base" 
+                       placeholder="Re: Your message">
+            </div>
+            
+            <div>
+                <label for="reply-message" class="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+                <textarea id="reply-message" rows="6" 
+                          class="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base" 
+                          placeholder="Type your reply here..."></textarea>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 lg:gap-4">
+                <button onclick="closeReplyModal()" class="flex-1 btn-3d bg-gray-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all text-sm lg:text-base">
+                    Cancel
+                </button>
+                <button onclick="sendReply()" class="flex-1 btn-3d bg-primary text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm lg:text-base">
+                    Send Reply
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentMessageId = null;
+
+    // Filter functionality
+    const filterBadges = document.querySelectorAll('.filter-badge');
+    filterBadges.forEach(badge => {
+        badge.addEventListener('click', () => {
+            filterBadges.forEach(b => b.classList.remove('active'));
+            badge.classList.add('active');
+            
+            const filter = badge.dataset.filter;
+            filterMessages(filter);
+        });
+    });
+
+    function filterMessages(filter) {
+        const messages = document.querySelectorAll('.message-card');
+        messages.forEach(message => {
+            if (filter === 'all') {
+                message.style.display = 'block';
+            } else if (filter === 'unread' && message.classList.contains('unread')) {
+                message.style.display = 'block';
+            } else if (filter === 'read' && message.classList.contains('read')) {
+                message.style.display = 'block';
+            } else if (filter === 'priority' && message.classList.contains('priority')) {
+                message.style.display = 'block';
+            } else if (filter === 'today') {
+                message.style.display = 'block';
+            } else {
+                message.style.display = 'none';
+            }
+        });
+    }
+
+    // Search functionality
+    document.getElementById('search-messages').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const messages = document.querySelectorAll('.message-card');
+        
+        messages.forEach(message => {
+            const messageText = message.textContent.toLowerCase();
+            if (messageText.includes(searchTerm)) {
+                message.style.display = 'block';
+            } else {
+                message.style.display = 'none';
+            }
+        });
+    });
+
+    // Mark as read
+    function markAsRead(messageId) {
+        const messageCard = document.querySelector(`[data-message-id="${messageId}"], .message-card:nth-child(${messageId})`);
+        if (messageCard) {
+            messageCard.classList.remove('unread');
+            messageCard.classList.add('read');
+            
+            const unreadDot = messageCard.querySelector('.w-2.h-2.bg-primary');
+            if (unreadDot) {
+                unreadDot.remove();
+            }
+            
+            const markReadBtn = messageCard.querySelector('button[onclick*="markAsRead"]');
+            if (markReadBtn) {
+                markReadBtn.outerHTML = '<span class="bg-green-100 text-green-800 px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm font-semibold">Read</span>';
+            }
+            
+            showNotification('Message marked as read', 'success');
+        }
+    }
+
+    // Mark all as read
+    function markAllRead() {
+        if (confirm('Mark all messages as read?')) {
+            const unreadMessages = document.querySelectorAll('.message-card.unread');
+            unreadMessages.forEach(message => {
+                message.classList.remove('unread');
+                message.classList.add('read');
                 
-                // Remove unread indicator
-                const unreadDot = messageCard.querySelector('.w-2.h-2.bg-primary');
+                const unreadDot = message.querySelector('.w-2.h-2.bg-primary');
                 if (unreadDot) {
                     unreadDot.remove();
                 }
-                
-                // Update button
-                const markReadBtn = messageCard.querySelector('button[onclick*="markAsRead"]');
-                if (markReadBtn) {
-                    markReadBtn.outerHTML = '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Read</span>';
-                }
-                
-                showNotification('Message marked as read', 'success');
+            });
+            
+            showNotification('All messages marked as read', 'success');
+        }
+    }
+
+    // Reply to message
+    function replyToMessage(messageId) {
+        currentMessageId = messageId;
+        document.getElementById('replyModal').classList.remove('hidden');
+    }
+
+    function closeReplyModal() {
+        document.getElementById('replyModal').classList.add('hidden');
+        currentMessageId = null;
+    }
+
+    function sendReply() {
+        const method = document.querySelector('input[name="reply_method"]:checked').value;
+        const subject = document.getElementById('reply-subject').value;
+        const message = document.getElementById('reply-message').value;
+        
+        if (!message.trim()) {
+            alert('Please enter a message');
+            return;
+        }
+        
+        console.log('Sending reply:', { method, subject, message, messageId: currentMessageId });
+        
+        showNotification(`Reply sent via ${method}`, 'success');
+        closeReplyModal();
+        
+        // Clear form
+        document.getElementById('reply-subject').value = '';
+        document.getElementById('reply-message').value = '';
+    }
+
+    // Contact customer functions
+    function callCustomer(phone) {
+        window.open(`tel:${phone}`, '_self');
+    }
+
+    function messageCustomer(phone) {
+        const message = "Hello! This is BueaDelights responding to your message. How can we help you?";
+        window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    // Archive message
+    function archiveMessage(messageId) {
+        if (confirm('Archive this message?')) {
+            const messageCard = document.querySelector(`[data-message-id="${messageId}"], .message-card:nth-child(${messageId})`);
+            if (messageCard) {
+                messageCard.style.display = 'none';
+                showNotification('Message archived', 'success');
             }
         }
+    }
 
-        // Mark all as read
-        function markAllRead() {
-            if (confirm('Mark all messages as read?')) {
-                const unreadMessages = document.querySelectorAll('.message-card.unread');
-                unreadMessages.forEach(message => {
-                    message.classList.remove('unread');
-                    message.classList.add('read');
-                    
-                    const unreadDot = message.querySelector('.w-2.h-2.bg-primary');
-                    if (unreadDot) {
-                        unreadDot.remove();
-                    }
-                });
-                
-                // Update unread count
-                document.querySelector('.notification-badge').textContent = '0';
-                
-                showNotification('All messages marked as read', 'success');
+    // Export messages
+    function exportMessages() {
+        window.location.href = '/admin-panel/messages/export/';
+    }
+
+    // Load more messages
+    function loadMoreMessages() {
+        showNotification('Loading more messages...', 'info');
+    }
+
+    // Show notification function
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-sm lg:text-base">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-lg">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
             }
-        }
+        }, 5000);
+    }
 
-        // Reply to message
-        function replyToMessage(messageId) {
-            currentMessageId = messageId;
-            document.getElementById('replyModal').classList.remove('hidden');
-        }
-
-        function closeReplyModal() {
-            document.getElementById('replyModal').classList.add('hidden');
-            currentMessageId = null;
-        }
-
-        function sendReply() {
-            const method = document.querySelector('input[name="reply_method"]:checked').value;
-            const subject = document.getElementById('reply-subject').value;
-            const message = document.getElementById('reply-message').value;
-            
-            if (!message.trim()) {
-                alert('Please enter a message');
-                return;
-            }
-            
-            // Here you would typically send the reply via AJAX
-            console.log('Sending reply:', { method, subject, message, messageId: currentMessageId });
-            
-            showNotification(`Reply sent via ${method}`, 'success');
+    // Close modal when clicking outside
+    document.getElementById('replyModal').addEventListener('click', function(e) {
+        if (e.target === this) {
             closeReplyModal();
-            
-            // Clear form
-            document.getElementById('reply-subject').value = '';
-            document.getElementById('reply-message').value = '';
         }
+    });
 
-        // Contact customer functions
-        function callCustomer(phone) {
-            window.open(`tel:${phone}`, '_self');
+    // Handle escape key for modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('replyModal').classList.contains('hidden')) {
+            closeReplyModal();
         }
+    });
 
-        function messageCustomer(phone) {
-            const message = "Hello! This is BueaDelights responding to your message. How can we help you?";
-            window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
-        }
-
-        // Archive message
-        function archiveMessage(messageId) {
-            if (confirm('Archive this message?')) {
-                const messageCard = document.querySelector(`[data-message-id="${messageId}"], .message-card:nth-child(${messageId})`);
-                if (messageCard) {
-                    messageCard.style.display = 'none';
-                    showNotification('Message archived', 'success');
-                }
-            }
-        }
-
-        // Export messages
-        function exportMessages() {
-            window.location.href = '/admin-panel/messages/export/';
-        }
-
-        // Load more messages
-        function loadMoreMessages() {
-            // Here you would typically load more messages via AJAX
-            showNotification('Loading more messages...', 'info');
-        }
-
-        // Show notification function
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
-            notification.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">×</button>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 5000);
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('replyModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeReplyModal();
-            }
-        });
-
-        // Auto-refresh messages every 30 seconds
-        setInterval(() => {
-            console.log('Checking for new messages...');
-            // In a real application, you would fetch new messages via AJAX
-        }, 30000);
-    </script>
-    {% csrf_token %}
-</body>
-</html>
+    // Auto-refresh messages every 30 seconds
+    setInterval(() => {
+        console.log('Checking for new messages...');
+        // In a real application, you would fetch new messages via AJAX
+    }, 30000);
+</script>
+{% csrf_token %}
+{% endblock %}

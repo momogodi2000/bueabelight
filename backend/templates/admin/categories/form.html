@@ -1,421 +1,439 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Category - BueaDelights Admin</title>
-    <meta name="description" content="Add new product category to BueaDelights">
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#228B22">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="BueaDelights">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Custom Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#228B22',
-                        'secondary': '#FFD700',
-                        'accent': '#DC143C',
-                        'dark': '#1a1a1a',
-                        'glass': 'rgba(255, 255, 255, 0.1)'
-                    },
-                    fontFamily: {
-                        'display': ['Georgia', 'serif'],
-                        'body': ['Inter', 'sans-serif']
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'slide-up': 'slideUp 0.6s ease-out',
-                        'slide-right': 'slideRight 0.8s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'bounce-slow': 'bounce 2s infinite',
-                        'rotate-slow': 'rotateY 10s linear infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate'
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <!-- Custom Styles -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        :root {
-            --primary: #228B22;
-            --secondary: #FFD700;
-            --accent: #DC143C;
-            --dark: #1a1a1a;
-        }
-        
-        * {
-            scroll-behavior: smooth;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-        
-        .hero-gradient {
-            background: linear-gradient(135deg, 
-                rgba(34, 139, 34, 0.95) 0%, 
-                rgba(34, 139, 34, 0.8) 50%, 
-                rgba(220, 20, 60, 0.8) 100%),
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .card-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .card-3d:hover {
-            transform: translateY(-20px) rotateX(5deg) rotateY(5deg) scale(1.02);
-        }
-        
-        .floating-element {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .floating-element:nth-child(2) {
-            animation-delay: -2s;
-        }
-        
-        .floating-element:nth-child(3) {
-            animation-delay: -4s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-20px) rotate(1deg); }
-            66% { transform: translateY(-10px) rotate(-1deg); }
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideRight {
-            from { opacity: 0; transform: translateX(-50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        @keyframes rotateY {
-            from { transform: rotateY(0deg); }
-            to { transform: rotateY(360deg); }
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -200px 0; }
-            100% { background-position: calc(200px + 100%) 0; }
-        }
-        
-        @keyframes glow {
-            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3); }
-        }
-        
-        .shimmer-effect {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            background-size: 200px 100%;
-            animation: shimmer 2s infinite;
-        }
-        
-        .text-gradient {
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .btn-3d {
-            position: relative;
-            transform-style: preserve-3d;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .btn-3d:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        
-        .btn-3d:active {
-            transform: translateY(-1px);
-        }
-        
-        .feature-icon {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        
-        .stats-counter {
-            font-variant-numeric: tabular-nums;
-            font-feature-settings: "tnum";
-        }
-        
-        .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .menu-item:hover .menu-price {
-            transform: scale(1.1);
-            color: var(--secondary);
-        }
-        
-        .social-icon {
-            transition: all 0.3s ease;
-        }
-        
-        .social-icon:hover {
-            transform: translateY(-3px) scale(1.1);
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .hero-gradient {
-                background-attachment: scroll;
-            }
-            
-            .card-3d:hover {
-                transform: translateY(-10px) scale(1.02);
-            }
-        }
-        
-        .cart-badge {
-            min-width: 1.25rem;
-            height: 1.25rem;
-            font-size: 0.75rem;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-primary shadow-lg transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        🍽️
-                    </div>
-                    <span class="text-xl font-bold text-white">BueaDelights Admin</span>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="{% url 'backend:admin_dashboard' %}" class="text-white hover:text-secondary transition-colors">Dashboard</a>
-                    <a href="{% url 'backend:admin_products' %}" class="text-white hover:text-secondary transition-colors">Products</a>
-                    <a href="{% url 'backend:admin_categories' %}" class="text-white hover:text-secondary transition-colors">Categories</a>
-                    <a href="{% url 'backend:admin_orders' %}" class="text-white hover:text-secondary transition-colors">Orders</a>
-                    <a href="{% url 'backend:admin_logout' %}" class="text-white hover:text-secondary transition-colors">Logout</a>
-                </div>
-                
-                <button class="md:hidden text-white" id="mobile-menu-btn">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div class="md:hidden bg-primary" id="mobile-menu" style="display: none;">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="{% url 'backend:admin_dashboard' %}" class="block px-3 py-2 text-white hover:text-secondary">Dashboard</a>
-                <a href="{% url 'backend:admin_products' %}" class="block px-3 py-2 text-white hover:text-secondary">Products</a>
-                <a href="{% url 'backend:admin_categories' %}" class="block px-3 py-2 text-white hover:text-secondary">Categories</a>
-                <a href="{% url 'backend:admin_orders' %}" class="block px-3 py-2 text-white hover:text-secondary">Orders</a>
-                <a href="{% url 'backend:admin_logout' %}" class="block px-3 py-2 text-white hover:text-secondary">Logout</a>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="min-h-screen pt-20 pb-12 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-dark">Add New Category</h1>
-                    <p class="text-gray-600">Create a new product category for your menu</p>
-                </div>
-                <a href="{% url 'backend:admin_categories' %}" class="btn-3d bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all">
-                    Back to Categories
-                </a>
-            </div>
+{% block title %}Add Category - BueaDelights Admin{% endblock %}
+{% block description %}Add new product category to BueaDelights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    
+    .preview-container {
+        background: linear-gradient(135deg, rgba(34, 139, 34, 0.05) 0%, rgba(255, 215, 0, 0.05) 100%);
+        backdrop-filter: blur(10px);
+    }
+    
+    .preview-card {
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    
+    .preview-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .image-preview {
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    
+    .form-input {
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .form-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .upload-area {
+        transition: all 0.3s ease;
+        border: 2px dashed #cbd5e0;
+    }
+    
+    .upload-area:hover,
+    .upload-area.dragover {
+        border-color: var(--primary);
+        background-color: rgba(34, 139, 34, 0.05);
+        transform: scale(1.02);
+    }
+    
+    .floating-element {
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .floating-element:nth-child(2) {
+        animation-delay: -2s;
+    }
+    
+    .floating-element:nth-child(3) {
+        animation-delay: -4s;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-15px) rotate(1deg); }
+        66% { transform: translateY(-8px) rotate(-1deg); }
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .floating-element {
+            animation: none;
+        }
+        
+        .form-container,
+        .preview-container {
+            margin-bottom: 1rem;
+        }
+        
+        .grid-layout {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .preview-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .upload-area:hover {
+            transform: scale(1.01);
+        }
+        
+        .header-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .header-actions a {
+            width: 100%;
+            text-align: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .form-container,
+        .preview-container {
+            padding: 1rem;
+        }
+        
+        .preview-card {
+            padding: 1rem;
+        }
+        
+        .image-preview {
+            height: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Floating Background Elements -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="floating-element absolute top-20 right-20 w-32 h-32 bg-primary/5 rounded-full"></div>
+    <div class="floating-element absolute bottom-40 left-1/3 w-24 h-24 bg-secondary/10 rounded-full"></div>
+    <div class="floating-element absolute top-1/2 right-1/4 w-16 h-16 bg-accent/5 rounded-full"></div>
+</div>
+
+<!-- Header -->
+<header class="mb-6 lg:mb-8 relative z-10" data-aos="fade-down">
+    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-dark">Add New Category</h1>
+            <p class="text-gray-600 text-sm lg:text-base">Create a new product category for your menu</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'backend:admin_categories' %}" class="btn-3d bg-gray-200 text-gray-800 px-4 lg:px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all text-sm lg:text-base">
+                ← Back to Categories
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Form -->
+<div class="form-container rounded-xl lg:rounded-2xl shadow-lg overflow-hidden relative z-10" data-aos="fade-up">
+    <div class="grid-layout grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 p-6 lg:p-8">
+        <!-- Form Section -->
+        <div data-aos="fade-right">
+            <h2 class="text-xl lg:text-2xl font-bold text-dark mb-4 lg:mb-6">Category Details</h2>
             
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-                    <div data-aos="fade-right">
-                        <h2 class="text-2xl font-bold text-dark mb-6">Category Details</h2>
-                        
-                        <form method="POST" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            
-                            <div class="space-y-6">
-                                <div>
-                                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                                    <input type="text" id="name" name="name" required
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                                           placeholder="e.g. Traditional Dishes">
-                                </div>
-                                
-                                <div>
-                                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea id="description" name="description" rows="3"
-                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                                              placeholder="Brief description of this category"></textarea>
-                                </div>
-                                
-                                <div>
-                                    <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
-                                    <input type="file" id="image" name="image" accept="image/*"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                                    <p class="text-xs text-gray-500 mt-1">Recommended size: 800x600px</p>
-                                </div>
-                                
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="is_active" name="is_active" checked
-                                           class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                    <label for="is_active" class="ml-2 block text-sm text-gray-700">Active (visible to customers)</label>
-                                </div>
-                                
-                                <div class="pt-4">
-                                    <button type="submit" class="btn-3d w-full bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
-                                        Create Category
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+            <form method="POST" enctype="multipart/form-data" id="categoryForm">
+                {% csrf_token %}
+                
+                <div class="space-y-4 lg:space-y-6">
+                    <!-- Category Name -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Category Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               required
+                               class="form-input w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm lg:text-base"
+                               placeholder="e.g. Traditional Dishes"
+                               oninput="updatePreview()">
                     </div>
                     
-                    <div class="bg-gray-50 rounded-xl p-8 flex flex-col items-center justify-center" data-aos="fade-left">
-                        <div class="w-full max-w-xs">
-                            <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-                                <div class="h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 mb-4">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-semibold text-center text-gray-800">Category Preview</h3>
-                                <p class="text-sm text-center text-gray-500 mt-1">Preview will appear here</p>
-                            </div>
-                            
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Categories help organize your menu and make it easier for customers to find what they're looking for.</p>
+                    <!-- Description -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Description
+                        </label>
+                        <textarea id="description" 
+                                  name="description" 
+                                  rows="3"
+                                  class="form-input w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm lg:text-base"
+                                  placeholder="Brief description of this category"
+                                  oninput="updatePreview()"></textarea>
+                    </div>
+                    
+                    <!-- Image Upload -->
+                    <div>
+                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                            Category Image
+                        </label>
+                        <div class="upload-area rounded-lg p-4 lg:p-6 text-center cursor-pointer" onclick="document.getElementById('image').click()">
+                            <input type="file" 
+                                   id="image" 
+                                   name="image" 
+                                   accept="image/*"
+                                   class="hidden"
+                                   onchange="handleImageUpload(this)">
+                            <div id="uploadContent">
+                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-gray-400 mx-auto mb-2 lg:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p class="text-sm lg:text-base text-gray-500 mb-1 lg:mb-2">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-400">PNG, JPG, GIF up to 10MB</p>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-1">Recommended size: 800x600px</p>
                     </div>
+                    
+                    <!-- Active Status -->
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="is_active" 
+                               name="is_active" 
+                               checked
+                               class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="is_active" class="ml-2 block text-sm text-gray-700">
+                            Active (visible to customers)
+                        </label>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="pt-4 lg:pt-6">
+                        <button type="submit" 
+                                class="btn-3d w-full bg-primary text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm lg:text-base"
+                                id="submitBtn">
+                            <span id="submitText">Create Category</span>
+                            <div id="submitSpinner" class="hidden loading-spinner inline-block ml-2"></div>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="preview-container rounded-xl p-6 lg:p-8 flex flex-col items-center justify-center" data-aos="fade-left">
+            <div class="w-full max-w-xs lg:max-w-sm">
+                <div class="preview-card p-4 lg:p-6 rounded-xl shadow-md mb-4 lg:mb-6">
+                    <div id="imagePreview" class="image-preview h-32 lg:h-48 rounded-lg flex items-center justify-center text-gray-400 mb-3 lg:mb-4">
+                        <svg class="w-8 h-8 lg:w-12 lg:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 id="previewName" class="text-lg font-semibold text-center text-gray-800 mb-1">Category Preview</h3>
+                    <p id="previewDescription" class="text-sm text-center text-gray-500">Preview will appear here</p>
+                    <div class="flex justify-center mt-3">
+                        <span id="previewStatus" class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-white/50 rounded-lg p-3 lg:p-4 mb-3 lg:mb-4">
+                        <h4 class="font-semibold text-gray-800 mb-2 text-sm lg:text-base">Quick Tips</h4>
+                        <ul class="text-xs lg:text-sm text-gray-600 space-y-1">
+                            <li>• Use descriptive names</li>
+                            <li>• Keep descriptions concise</li>
+                            <li>• High-quality images work best</li>
+                            <li>• Categories help organize your menu</li>
+                        </ul>
+                    </div>
+                    <p class="text-xs lg:text-sm text-gray-500">Categories help organize your menu and make it easier for customers to find what they're looking for.</p>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-400 text-sm">
-                © 2025 BueaDelights. All rights reserved.
-            </p>
-        </div>
-    </footer>
+<!-- Success/Error Message -->
+<div id="messageContainer" class="fixed top-4 right-4 z-50 max-w-sm"></div>
+{% endblock %}
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Initialize AOS animation library
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-quad',
-            once: true
-        });
-
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+{% block extra_js %}
+<script>
+    // Preview update function
+    function updatePreview() {
+        const name = document.getElementById('name').value || 'Category Preview';
+        const description = document.getElementById('description').value || 'Preview will appear here';
+        const isActive = document.getElementById('is_active').checked;
         
-        mobileMenuBtn.addEventListener('click', () => {
-            if (mobileMenu.style.display === 'block') {
-                mobileMenu.style.display = 'none';
-            } else {
-                mobileMenu.style.display = 'block';
-            }
-        });
-
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                navbar.classList.add('shadow-lg');
-                navbar.classList.add('bg-primary');
-            } else {
-                navbar.classList.remove('shadow-lg');
-                navbar.classList.remove('bg-primary');
-            }
-        });
-
-        // Preview image when selected
-        const imageInput = document.getElementById('image');
-        const imagePreview = document.querySelector('.bg-gray-200');
+        document.getElementById('previewName').textContent = name;
+        document.getElementById('previewDescription').textContent = description;
         
-        imageInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover rounded-lg">`;
-                }
-                reader.readAsDataURL(file);
+        const statusElement = document.getElementById('previewStatus');
+        if (isActive) {
+            statusElement.className = 'px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full';
+            statusElement.textContent = 'Active';
+        } else {
+            statusElement.className = 'px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full';
+            statusElement.textContent = 'Inactive';
+        }
+    }
+
+    // Handle image upload
+    function handleImageUpload(input) {
+        const file = input.files[0];
+        const previewElement = document.getElementById('imagePreview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewElement.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover rounded-lg">`;
             }
-        });
-    </script>
-</body>
-</html>
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Drag and drop functionality
+    const uploadArea = document.querySelector('.upload-area');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight(e) {
+        uploadArea.classList.add('dragover');
+    }
+    
+    function unhighlight(e) {
+        uploadArea.classList.remove('dragover');
+    }
+    
+    uploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            document.getElementById('image').files = files;
+            handleImageUpload(document.getElementById('image'));
+        }
+    }
+
+    // Form submission with loading state
+    document.getElementById('categoryForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitSpinner = document.getElementById('submitSpinner');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.textContent = 'Creating...';
+        submitSpinner.classList.remove('hidden');
+    });
+
+    // Initialize preview on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updatePreview();
+        
+        // Add event listener to active checkbox
+        document.getElementById('is_active').addEventListener('change', updatePreview);
+    });
+
+    // Show notification function
+    function showNotification(message, type = 'success') {
+        const container = document.getElementById('messageContainer');
+        const notification = document.createElement('div');
+        notification.className = `p-4 rounded-lg shadow-lg mb-2 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transform transition-all duration-300 translate-x-full`;
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-sm lg:text-base">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-lg">×</button>
+            </div>
+        `;
+        
+        container.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // Handle form validation
+    document.getElementById('name').addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value.length > 0 && value.length < 3) {
+            this.setCustomValidity('Category name must be at least 3 characters long');
+        } else if (value.length > 100) {
+            this.setCustomValidity('Category name must be less than 100 characters');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Character counter for description
+    const descriptionField = document.getElementById('description');
+    descriptionField.addEventListener('input', function() {
+        const maxLength = 500;
+        const currentLength = this.value.length;
+        
+        // Create or update character counter
+        let counter = document.getElementById('descriptionCounter');
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'descriptionCounter';
+            counter.className = 'text-xs text-gray-500 mt-1';
+            this.parentNode.appendChild(counter);
+        }
+        
+        counter.textContent = `${currentLength}/${maxLength} characters`;
+        
+        if (currentLength > maxLength) {
+            counter.className = 'text-xs text-red-500 mt-1';
+            this.setCustomValidity('Description is too long');
+        } else {
+            counter.className = 'text-xs text-gray-500 mt-1';
+            this.setCustomValidity('');
+        }
+    });
+</script>
+{% endblock %}

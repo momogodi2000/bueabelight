@@ -41,43 +41,65 @@ class CateringInquiryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'input-field',
-                'placeholder': 'Your Full Name'
+                'placeholder': 'Your Full Name',
+                'required': True
             }),
             'phone': forms.TextInput(attrs={
                 'class': 'input-field',
-                'placeholder': '+237 6 XX XX XX XX'
+                'placeholder': '+237 6 XX XX XX XX',
+                'required': True
             }),
             'email': forms.EmailInput(attrs={
                 'class': 'input-field',
-                'placeholder': 'your.email@example.com'
+                'placeholder': 'your.email@example.com (optional)'
             }),
             'event_type': forms.Select(attrs={
-                'class': 'input-field'
+                'class': 'input-field',
+                'required': True
             }),
             'guest_count': forms.NumberInput(attrs={
                 'class': 'input-field',
                 'placeholder': 'Number of guests',
-                'min': 1
+                'min': 10,
+                'max': 1000,
+                'required': True
             }),
             'preferred_date': forms.DateInput(attrs={
                 'class': 'input-field',
-                'type': 'date'
+                'type': 'date',
+                'required': True
             }),
             'preferred_time': forms.TimeInput(attrs={
                 'class': 'input-field',
-                'type': 'time'
+                'type': 'time',
+                'required': True
             }),
             'location': forms.Textarea(attrs={
                 'class': 'input-field',
-                'placeholder': 'Event location/address',
-                'rows': 3
+                'placeholder': 'Enter the complete venue address...',
+                'rows': 3,
+                'required': True
             }),
             'special_requirements': forms.Textarea(attrs={
                 'class': 'input-field',
-                'placeholder': 'Any special requirements or dietary restrictions...',
+                'placeholder': 'Tell us about dietary restrictions, preferred dishes, service style, timing, or any other special requests...',
                 'rows': 4
             })
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set minimum date to 2 days from now (48 hours advance notice)
+        from datetime import date, timedelta
+        min_date = date.today() + timedelta(days=2)
+        self.fields['preferred_date'].widget.attrs['min'] = min_date.strftime('%Y-%m-%d')
+        
+        # Make required fields more explicit
+        for field_name, field in self.fields.items():
+            if field.required:
+                field.widget.attrs['required'] = True
+                if 'placeholder' in field.widget.attrs:
+                    field.widget.attrs['placeholder'] += ' *'
 
 class CheckoutForm(forms.ModelForm):
     PAYMENT_METHOD_CHOICES = [

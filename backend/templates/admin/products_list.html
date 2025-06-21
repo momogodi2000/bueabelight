@@ -10,8 +10,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="msapplication-TileColor" content="#228B22">
+<meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
 <link rel="manifest" href="{% static 'manifest.json' %}">
-<link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icon-180x180.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon-32x32.png' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon-16x16.png' %}">
 
 <!-- AOS Animation Library -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -66,133 +71,447 @@
         color: white;
     }
 
-    /* Mobile responsiveness without changing design */
+    /* Mobile-first responsive design */
+    .sidebar {
+        width: 64px;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar:hover .sidebar-text,
+    .sidebar.expanded .sidebar-text {
+        opacity: 1;
+    }
+    
+    main {
+        margin-left: 64px;
+        transition: margin-left 0.3s ease;
+        padding: 1rem;
+    }
+
+    /* Desktop styles */
+    @media (min-width: 1024px) {
+        .sidebar {
+            width: 256px;
+        }
+        
+        .sidebar-text {
+            opacity: 1;
+        }
+        
+        main {
+            margin-left: 256px;
+            padding: 2rem;
+        }
+    }
+
+    /* Tablet styles */
+    @media (max-width: 1023px) and (min-width: 769px) {
+        .sidebar {
+            width: 80px;
+        }
+        
+        .sidebar:hover {
+            width: 256px;
+            z-index: 60;
+        }
+        
+        .sidebar:hover .sidebar-text {
+            opacity: 1;
+        }
+        
+        main {
+            margin-left: 80px;
+            padding: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* Mobile styles */
     @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 256px;
+            transform: translateX(-100%);
+            z-index: 50;
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.95) 100%);
+        }
+        
+        .sidebar.mobile-open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-text {
+            opacity: 1;
+        }
+        
         main {
             margin-left: 0;
             padding: 1rem;
         }
+        
         .flex.justify-between.items-center {
             flex-direction: column;
             align-items: flex-start;
-        }
-        .flex.space-x-4 {
-            margin-top: 1rem;
-            width: 100%;
-            justify-content: space-between;
-        }
-        .grid.grid-cols-1.md\:grid-cols-4.gap-6.mb-8 {
-            grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
         }
-        .grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4.gap-6 {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        .flex.flex-col.md\:flex-row.justify-between.items-center.space-y-4.md\:space-y-0 {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .flex.space-x-4 {
-            margin-top: 1rem;
-            width: 100%;
-        }
-        .product-card {
-            max-width: 100%;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .grid.grid-cols-1.md\:grid-cols-4.gap-6.mb-8 {
-            grid-template-columns: 1fr;
-        }
-        .grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4.gap-6 {
-            grid-template-columns: 1fr;
-        }
+        
         .flex.space-x-4 {
             flex-direction: column;
             gap: 0.5rem;
-        }
-        .flex.space-x-4 button, .flex.space-x-4 a {
             width: 100%;
         }
+        
+        .flex.space-x-4 > * {
+            margin: 0;
+            width: 100%;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .flex.flex-col.md\:flex-row.justify-between.items-center.space-y-4.md\:space-y-0 {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .filter-badges-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .filter-badges {
+            display: inline-flex;
+            gap: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        
+        .search-filters {
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .search-filters > * {
+            width: 100%;
+        }
+    }
+
+    /* Small mobile styles */
+    @media (max-width: 480px) {
+        main {
+            padding: 0.75rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .product-card {
+            max-width: 100%;
+        }
+        
+        .flex.space-x-2 {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .flex.space-x-2 > * {
+            margin: 0;
+            width: 100%;
+        }
+    }
+
+    /* Touch-friendly elements */
+    @media (hover: none) and (pointer: coarse) {
+        .btn-3d {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .sidebar-link {
+            min-height: 48px;
+        }
+        
+        .filter-badge {
+            min-height: 44px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .product-card {
+            padding: 1rem;
+        }
+        
+        .product-card .btn-3d {
+            padding: 0.75rem 1rem;
+        }
+    }
+
+    /* Scroll optimizations */
+    .filter-badges-container {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .filter-badges-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Loading states */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Pull to refresh styles */
+    .pull-to-refresh {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .pull-to-refresh-indicator {
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .pull-to-refresh.pulling .pull-to-refresh-indicator {
+        transform: translateX(-50%) translateY(80px);
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Mobile Sidebar Toggle -->
+<button class="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-3 rounded-lg shadow-lg touch-manipulation" id="mobileMenuToggle" aria-label="Toggle menu">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden" id="mobileOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar admin-sidebar min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl bg-gradient-to-b from-primary to-green-800">
+    <div class="p-6">
+        <div class="flex items-center space-x-3 mb-8">
+            <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
+                🍽️
+            </div>
+            <div class="sidebar-text">
+                <h1 class="text-xl font-bold">BueaDelights</h1>
+                <p class="text-sm text-green-200">Admin Panel</p>
+            </div>
+        </div>
+        
+        <nav class="space-y-2">
+            <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"/>
+                </svg>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <span class="sidebar-text">Orders</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_products' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/10 touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span class="sidebar-text">Products</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                <span class="sidebar-text">Categories</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span class="sidebar-text">Messages</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span class="sidebar-text">Catering</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span class="sidebar-text">Analytics</span>
+            </a>
+            
+            <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all touch-manipulation">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="sidebar-text">Settings</span>
+            </a>
+        </nav>
+    </div>
+    
+    <div class="absolute bottom-6 left-6 right-6">
+        <div class="border-t border-white/20 pt-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                    A
+                </div>
+                <div class="sidebar-text min-w-0">
+                    <div class="font-semibold truncate">Admin User</div>
+                    <div class="text-sm text-green-200">Administrator</div>
+                </div>
+            </div>
+            <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block touch-manipulation">
+                <span class="sidebar-text">Logout</span>
+                <span class="sidebar-icon lg:hidden">🚪</span>
+            </a>
+        </div>
+    </div>
+</aside>
+
 <!-- Main Content -->
-<main class="ml-64 flex-1 p-8">
+<main class="pull-to-refresh" id="mainContent">
+    <!-- Pull to refresh indicator -->
+    <div class="pull-to-refresh-indicator" id="refreshIndicator">
+        <svg class="w-6 h-6 animate-spin text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+    </div>
+    
     <!-- Header -->
-    <header class="mb-8" data-aos="fade-down">
+    <header class="mb-6 lg:mb-8" data-aos="fade-down">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-4xl font-display font-bold text-dark">Products Management</h1>
-                <p class="text-xl text-gray-600 mt-2">Manage your menu items and food products</p>
+                <h1 class="text-2xl md:text-4xl font-display font-bold text-dark">Products Management</h1>
+                <p class="text-base md:text-xl text-gray-600 mt-2">Manage your menu items and food products</p>
             </div>
             
             <div class="flex space-x-4">
-                <button onclick="exportProducts()" class="btn-3d bg-secondary text-dark px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
+                <button onclick="exportProducts()" class="btn-3d bg-secondary text-dark px-4 md:px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all touch-manipulation">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                     </svg>
-                    Export
+                    <span class="hidden sm:inline">Export</span>
                 </button>
-                <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
+                <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-4 md:px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all touch-manipulation">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
-                    Add Product
+                    <span class="hidden sm:inline">Add Product</span>
+                    <span class="sm:hidden">Add</span>
                 </a>
             </div>
         </div>
     </header>
     
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
+    <div class="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div class="bg-white rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Total Products</p>
-                    <p class="text-3xl font-bold text-dark">{{ total_products|default:0 }}</p>
+                    <p class="text-gray-600 text-xs lg:text-sm font-medium">Total Products</p>
+                    <p class="text-xl lg:text-3xl font-bold text-dark">{{ total_products|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl">
+                <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-lg lg:text-xl">
                     🍽️
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+        <div class="bg-white rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Available</p>
-                    <p class="text-3xl font-bold text-dark">{{ available_products|default:0 }}</p>
+                    <p class="text-gray-600 text-xs lg:text-sm font-medium">Available</p>
+                    <p class="text-xl lg:text-3xl font-bold text-dark">{{ available_products|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xl">
+                <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-lg lg:text-xl">
                     ✅
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
+        <div class="bg-white rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Featured</p>
-                    <p class="text-3xl font-bold text-dark">{{ featured_products|default:0 }}</p>
+                    <p class="text-gray-600 text-xs lg:text-sm font-medium">Featured</p>
+                    <p class="text-xl lg:text-3xl font-bold text-dark">{{ featured_products|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl">
+                <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg lg:text-xl">
                     ⭐
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-2xl p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
+        <div class="bg-white rounded-2xl p-4 lg:p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Low Stock</p>
-                    <p class="text-3xl font-bold text-dark">5</p>
+                    <p class="text-gray-600 text-xs lg:text-sm font-medium">Low Stock</p>
+                    <p class="text-xl lg:text-3xl font-bold text-dark">5</p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-xl">
+                <div class="w-8 h-8 lg:w-12 lg:h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-lg lg:text-xl">
                     ⚠️
                 </div>
             </div>
@@ -200,35 +519,37 @@
     </div>
     
     <!-- Filters and Search -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg mb-8" data-aos="fade-up" data-aos-delay="500">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div class="flex flex-wrap gap-2">
-                <button class="filter-badge active px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="all">
-                    All Products
-                </button>
-                <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="available">
-                    Available
-                </button>
-                <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="unavailable">
-                    Unavailable
-                </button>
-                <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="featured">
-                    Featured
-                </button>
-                <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700" data-filter="low-stock">
-                    Low Stock
-                </button>
+    <div class="bg-white rounded-2xl p-4 lg:p-6 shadow-lg mb-6 lg:mb-8" data-aos="fade-up" data-aos-delay="500">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+            <div class="filter-badges-container w-full lg:w-auto">
+                <div class="filter-badges flex lg:flex-wrap gap-2">
+                    <button class="filter-badge active px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 whitespace-nowrap touch-manipulation" data-filter="all">
+                        All Products
+                    </button>
+                    <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 whitespace-nowrap touch-manipulation" data-filter="available">
+                        Available
+                    </button>
+                    <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 whitespace-nowrap touch-manipulation" data-filter="unavailable">
+                        Unavailable
+                    </button>
+                    <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 whitespace-nowrap touch-manipulation" data-filter="featured">
+                        Featured
+                    </button>
+                    <button class="filter-badge px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 whitespace-nowrap touch-manipulation" data-filter="low-stock">
+                        Low Stock
+                    </button>
+                </div>
             </div>
             
-            <div class="flex space-x-4">
-                <div class="relative">
-                    <input type="text" id="search-products" placeholder="Search products..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            <div class="search-filters flex space-x-4 w-full lg:w-auto">
+                <div class="relative flex-1 lg:flex-none">
+                    <input type="text" id="search-products" placeholder="Search products..." class="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent w-full lg:w-64 touch-manipulation">
                     <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
                 
-                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <select class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent touch-manipulation">
                     <option value="">All Categories</option>
                     {% for category in categories %}
                     <option value="{{ category.slug }}">{{ category.name }}</option>
@@ -239,7 +560,7 @@
     </div>
     
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-grid">
+    <div class="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6" id="products-grid">
         {% for product in products %}
         <div class="product-card bg-white rounded-2xl shadow-lg overflow-hidden" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
             <div class="relative h-48 overflow-hidden">
@@ -247,11 +568,11 @@
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
                 {% else %}
                     <div class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                        <div class="text-6xl">🍽️</div>
+                        <div class="text-4xl lg:text-6xl">🍽️</div>
                     </div>
                 {% endif %}
                 
-                <div class="absolute top-4 left-4 flex space-x-2">
+                <div class="absolute top-4 left-4 flex flex-wrap gap-1">
                     {% if product.is_featured %}
                     <span class="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-semibold">Featured</span>
                     {% endif %}
@@ -264,13 +585,13 @@
                 </div>
                 
                 <div class="absolute top-4 right-4">
-                    <div class="flex space-x-2">
-                        <button onclick="toggleFeatured({{ product.id }})" class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors">
+                    <div class="flex space-x-1">
+                        <button onclick="toggleFeatured({{ product.id }})" class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors touch-manipulation" aria-label="Toggle featured">
                             <svg class="w-4 h-4" fill="{% if product.is_featured %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                             </svg>
                         </button>
-                        <button onclick="toggleAvailability({{ product.id }})" class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors">
+                        <button onclick="toggleAvailability({{ product.id }})" class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors touch-manipulation" aria-label="Toggle availability">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -280,10 +601,10 @@
                 </div>
             </div>
             
-            <div class="p-6">
+            <div class="p-4 lg:p-6">
                 <div class="flex justify-between items-start mb-3">
-                    <h3 class="text-lg font-bold text-dark line-clamp-2">{{ product.name }}</h3>
-                    <div class="text-xl font-bold text-primary">{{ product.price|floatformat:0 }} FCFA</div>
+                    <h3 class="text-base lg:text-lg font-bold text-dark line-clamp-2 flex-1 mr-2">{{ product.name }}</h3>
+                    <div class="text-lg lg:text-xl font-bold text-primary whitespace-nowrap">{{ product.price|floatformat:0 }} FCFA</div>
                 </div>
                 
                 <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ product.description|truncatewords:15 }}</p>
@@ -294,10 +615,10 @@
                 </div>
                 
                 <div class="flex space-x-2">
-                    <a href="{% url 'backend:admin_product_edit' product.pk %}" class="flex-1 btn-3d bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-center">
+                    <a href="{% url 'backend:admin_product_edit' product.pk %}" class="flex-1 btn-3d bg-primary text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all text-center text-sm touch-manipulation">
                         Edit
                     </a>
-                    <button onclick="deleteProduct({{ product.id }}, '{{ product.name }}')" class="btn-3d bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                    <button onclick="deleteProduct({{ product.id }}, '{{ product.name }}')" class="btn-3d bg-red-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all touch-manipulation" aria-label="Delete product">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
@@ -307,10 +628,10 @@
         </div>
         {% empty %}
         <div class="col-span-full text-center py-20">
-            <div class="text-8xl mb-6">🍽️</div>
-            <h3 class="text-3xl font-bold text-dark mb-4">No products found</h3>
-            <p class="text-xl text-gray-600 mb-8">Start by adding your first product to the menu</p>
-            <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-green-700 transition-all">
+            <div class="text-6xl lg:text-8xl mb-6">🍽️</div>
+            <h3 class="text-xl lg:text-3xl font-bold text-dark mb-4">No products found</h3>
+            <p class="text-base lg:text-xl text-gray-600 mb-8">Start by adding your first product to the menu</p>
+            <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-6 lg:px-8 py-3 lg:py-4 rounded-full font-semibold hover:bg-green-700 transition-all touch-manipulation">
                 Add First Product
             </a>
         </div>
@@ -319,10 +640,10 @@
     
     <!-- Pagination -->
     {% if is_paginated %}
-    <div class="flex justify-center mt-12" data-aos="fade-up">
+    <div class="flex justify-center mt-8 lg:mt-12" data-aos="fade-up">
         <div class="flex space-x-2">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all touch-manipulation">
                 Previous
             </a>
             {% endif %}
@@ -331,12 +652,12 @@
                 {% if page_obj.number == num %}
                 <span class="bg-primary text-white px-4 py-2 rounded-lg font-semibold">{{ num }}</span>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">{{ num }}</a>
+                <a href="?page={{ num }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all touch-manipulation">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all">
+            <a href="?page={{ page_obj.next_page_number }}" class="btn-3d bg-white border-2 border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-all touch-manipulation">
                 Next
             </a>
             {% endif %}
@@ -346,17 +667,17 @@
 </main>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-2xl p-8 max-w-md mx-4" data-aos="zoom-in">
+<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 lg:p-8 max-w-md mx-auto w-full" data-aos="zoom-in">
         <div class="text-center">
-            <div class="text-6xl mb-4">🗑️</div>
-            <h3 class="text-2xl font-bold text-dark mb-4">Delete Product</h3>
-            <p class="text-gray-600 mb-8">Are you sure you want to delete "<span id="productName"></span>"? This action cannot be undone.</p>
+            <div class="text-4xl lg:text-6xl mb-4">🗑️</div>
+            <h3 class="text-xl lg:text-2xl font-bold text-dark mb-4">Delete Product</h3>
+            <p class="text-gray-600 mb-6 lg:mb-8">Are you sure you want to delete "<span id="productName"></span>"? This action cannot be undone.</p>
             <div class="flex space-x-4">
-                <button onclick="closeDeleteModal()" class="flex-1 btn-3d bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all">
+                <button onclick="closeDeleteModal()" class="flex-1 btn-3d bg-gray-500 text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all touch-manipulation">
                     Cancel
                 </button>
-                <button onclick="confirmDelete()" class="flex-1 btn-3d bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                <button onclick="confirmDelete()" class="flex-1 btn-3d bg-red-500 text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all touch-manipulation">
                     Delete
                 </button>
             </div>
@@ -369,6 +690,13 @@
 <!-- Scripts -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    // Initialize AOS
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-quad',
+        once: true
+    });
+
     // Register service worker for PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -382,11 +710,37 @@
         });
     }
 
-    // Initialize AOS
-    AOS.init({
-        duration: 800,
-        easing: 'ease-out-quad',
-        once: true
+    // Mobile sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (mobileMenuToggle && mobileOverlay && sidebar) {
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('hidden');
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            });
+            
+            mobileOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+            
+            // Close sidebar when clicking on a link
+            const sidebarLinks = sidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileOverlay.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        }
     });
 
     let productToDelete = null;
@@ -475,10 +829,12 @@
         productToDelete = productId;
         document.getElementById('productName').textContent = productName;
         document.getElementById('deleteModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeDeleteModal() {
         document.getElementById('deleteModal').classList.add('hidden');
+        document.body.style.overflow = '';
         productToDelete = null;
     }
 
@@ -499,5 +855,88 @@
             closeDeleteModal();
         }
     });
+
+    // Pull to refresh functionality
+    let startY;
+    let currentY;
+    let isPulling = false;
+    const mainContent = document.getElementById('mainContent');
+    const refreshIndicator = document.getElementById('refreshIndicator');
+
+    mainContent.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) {
+            startY = e.touches[0].pageY;
+            isPulling = true;
+        }
+    });
+
+    mainContent.addEventListener('touchmove', (e) => {
+        if (!isPulling) return;
+        
+        currentY = e.touches[0].pageY;
+        const pullDistance = currentY - startY;
+        
+        if (pullDistance > 0 && pullDistance < 100) {
+            e.preventDefault();
+            mainContent.classList.add('pulling');
+        }
+    });
+
+    mainContent.addEventListener('touchend', (e) => {
+        if (!isPulling) return;
+        
+        const pullDistance = currentY - startY;
+        if (pullDistance > 80) {
+            // Trigger refresh
+            refreshIndicator.style.transform = 'translateX(-50%) translateY(80px) rotate(360deg)';
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+        
+        mainContent.classList.remove('pulling');
+        isPulling = false;
+    });
+
+    // Touch gestures for sidebar
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleGesture();
+    });
+    
+    function handleGesture() {
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        if (touchEndX < touchStartX - 50 && sidebar.classList.contains('mobile-open')) {
+            // Swipe left to close sidebar
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        if (touchEndX > touchStartX + 50 && !sidebar.classList.contains('mobile-open') && touchStartX < 50) {
+            // Swipe right from edge to open sidebar
+            sidebar.classList.add('mobile-open');
+            mobileOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
 </script>
 {% endblock %}
