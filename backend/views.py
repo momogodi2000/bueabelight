@@ -28,6 +28,7 @@ import urllib.parse
 import requests
 import uuid
 
+
 from .models import (
     Product, Category, Order, OrderItem, ContactMessage, 
     CateringInquiry, BusinessSettings, NoupiaTransaction
@@ -37,6 +38,10 @@ from .forms import (
     AdminLoginForm, ForgotPasswordForm, ResetPasswordForm
 )
 from .utils import WhatsAppHelper, NoupiaPaymentHelper, ReceiptGenerator
+
+# Don't forget to import the necessary modules at the top of views.py:
+import logging
+logger = logging.getLogger(__name__)
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -241,6 +246,7 @@ def cart_count(request):
     return JsonResponse({'count': count})
 
 # Checkout and Order Views
+# Updated CheckoutView in views.py
 class CheckoutView(TemplateView):
     template_name = 'backend/checkout.html'
     
@@ -279,7 +285,6 @@ class CheckoutView(TemplateView):
         context['form'] = CheckoutForm()
         return context
     
-   # In views.py, modify the CheckoutView post method
     def post(self, request, *args, **kwargs):
         form = CheckoutForm(request.POST)
         cart = request.session.get('cart', {})
@@ -289,56 +294,95 @@ class CheckoutView(TemplateView):
             return redirect('backend:cart')
         
         if form.is_valid():
-            # Calculate totals
-            cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
-            
-            # Create order
-            order = Order.objects.create(
-                customer_name=form.cleaned_data['customer_name'],
-                customer_phone=form.cleaned_data['customer_phone'],
-                customer_email=form.cleaned_data['customer_email'],
-                customer_location=form.cleaned_data['customer_location'],
-                total_amount=cart_total,
-                delivery_fee=settings.DELIVERY_FEE,
-                payment_method=form.cleaned_data['payment_method'],
-                special_instructions=form.cleaned_data['special_instructions']
-            )
-            
-            # Create order items
-            for product_id, item in cart.items():
-                try:
-                    product = Product.objects.get(id=product_id)
-                    OrderItem.objects.create(
-                        order=order,
-                        product=product,
-                        quantity=item['quantity'],
-                        unit_price=item['price'],
-                        total_price=item['price'] * item['quantity']
+            try:
+                # Calculate totals
+                cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
+                
+                # Create order
+                order = Order.objects.create(
+                    customer_name=form.cleaned_data['customer_name'],
+                    customer_phone=form.cleaned_data['customer_phone'],
+                    customer_email=form.cleaned_data['customer_email'],
+                    customer_location=form.cleaned_data['customer_location'],
+                    total_amount=cart_total,
+                    delivery_fee=settings.DELIVERY_FEE,
+                    payment_method=form.cleaned_data['payment_method'],
+                    special_instructions=form.cleaned_data['special_instructions']
+                )
+                
+                # Create order items
+                for product_id, item in cart.items():
+                    try:
+                        product = Product.objects.get(id=product_id)
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=item['quantity'],
+                            unit_price=item['price'],
+                            total_price=item['price'] * item['quantity']
+                        )
+                    except Product.DoesNotExist:
+                        continue
+                
+                # 🎯 SEND EMAIL NOTIFICATION TO WHOLESALER
+                from .utils import EmailHelper
+                email_sent = EmailHelper.send_order_notification(order)
+                
+                if email_sent:
+                    logger.info(f"Email notification sent successfully for order {order.order_id}")
+                else:
+                    logger.warning(f"Failed to send email notification for order {order.order_id}")
+                
+                # Handle payment method routing
+                if order.payment_method == 'whatsapp_contact':
+                    # Clear cart before redirecting to WhatsApp
+                    request.session['cart'] = {}
+                    request.session.modified = True
+                    
+                    # Redirect to WhatsApp with order ID as parameter
+                    whatsapp_url = reverse('backend:whatsapp_order') + f'?order_id={order.order_id}'
+                    
+                    # Add success message
+                    messages.success(request, 
+                        f'Order #{order.order_id} created successfully! '
+                        f'You will be redirected to WhatsApp to complete your order.'
                     )
-                except Product.DoesNotExist:
-                    continue
+                    
+                    return redirect(whatsapp_url)
+                    
+                elif order.payment_method == 'mobile_money':
+                    # Process Noupia payment with order ID as parameter
+                    noupia_url = reverse('backend:noupia_payment') + f'?order_id={order.order_id}'
+                    
+                    # Add info message
+                    messages.info(request, 
+                        f'Order #{order.order_id} created! Redirecting to mobile money payment...'
+                    )
+                    
+                    return redirect(noupia_url)
+                    
+                else:
+                    # Cash on delivery
+                    order.payment_status = 'pending'
+                    order.save()
+                    
+                    # Clear cart
+                    request.session['cart'] = {}
+                    request.session.modified = True
+                    
+                    # Add success message
+                    messages.success(request, 
+                        f'Order #{order.order_id} placed successfully! '
+                        f'We will contact you to confirm delivery details.'
+                    )
+                    
+                    return redirect('backend:order_confirmation', order_id=order.order_id)
             
-            # Handle payment method
-            if order.payment_method == 'whatsapp_contact':
-                # Redirect to WhatsApp with order ID as parameter
-                whatsapp_url = reverse('backend:whatsapp_order') + f'?order_id={order.order_id}'
-                return redirect(whatsapp_url)
-            elif order.payment_method == 'mobile_money':
-                # Process Noupia payment with order ID as parameter
-                noupia_url = reverse('backend:noupia_payment') + f'?order_id={order.order_id}'
-                return redirect(noupia_url)
-            else:
-                # Cash on delivery
-                order.payment_status = 'pending'
-                order.save()
+            except Exception as e:
+                logger.error(f"Error creating order: {str(e)}")
+                messages.error(request, 'An error occurred while processing your order. Please try again.')
                 
-                # Clear cart
-                request.session['cart'] = {}
-                request.session.modified = True
-                
-                return redirect('backend:order_confirmation', order_id=order.order_id)
-        
-        # If form is invalid, return with errors
+        # If form is invalid or error occurred, return with errors
         context = self.get_context_data(**kwargs)
         context['form'] = form
         return render(request, self.template_name, context)
@@ -361,9 +405,10 @@ def whatsapp_order(request):
         order = Order.objects.get(order_id=order_id)
         whatsapp_url = WhatsAppHelper.create_order_whatsapp_url(order)
         
-        # Clear cart
-        request.session['cart'] = {}
-        request.session.modified = True
+        # Mark order as WhatsApp contacted (optional status update)
+        if hasattr(order, 'whatsapp_contacted'):
+            order.whatsapp_contacted = True
+            order.save()
         
         return redirect(whatsapp_url)
     
@@ -371,7 +416,6 @@ def whatsapp_order(request):
         messages.error(request, 'Order not found')
         return redirect('backend:home')
 
-# Payment Views
 def noupia_payment(request):
     """Process Noupia mobile money payment"""
     order_id = request.GET.get('order_id')
@@ -411,7 +455,10 @@ def noupia_payment(request):
             request.session['cart'] = {}
             request.session.modified = True
             
-            messages.success(request, 'Payment successful! Your order has been confirmed.')
+            messages.success(request, 
+                f'Payment successful! Order #{order.order_id} has been confirmed. '
+                f'We will contact you with delivery details.'
+            )
             return redirect('backend:order_confirmation', order_id=order.order_id)
         else:
             transaction.status = 'failed'
