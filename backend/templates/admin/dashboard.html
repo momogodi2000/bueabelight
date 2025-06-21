@@ -1,10 +1,9 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - BueaDelights</title>
+
+{% block title %}Admin Dashboard - BueaDelights{% endblock %}
+
+{% block extra_meta %}
     <meta name="description" content="BueaDelights Admin Dashboard - Manage orders, products, and business operations">
     
     <!-- PWA Meta Tags -->
@@ -12,45 +11,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
     <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
-    <!-- Custom Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#228B22',
-                        'secondary': '#FFD700',
-                        'accent': '#DC143C',
-                        'dark': '#1a1a1a',
-                        'glass': 'rgba(255, 255, 255, 0.1)'
-                    },
-                    fontFamily: {
-                        'display': ['Georgia', 'serif'],
-                        'body': ['Inter', 'sans-serif']
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'slide-up': 'slideUp 0.6s ease-out',
-                        'slide-right': 'slideRight 0.8s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'bounce-slow': 'bounce 2s infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate'
-                    }
-                }
-            }
-        }
-    </script>
-    
+{% endblock %}
+
+{% block extra_css %}
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
@@ -67,11 +32,6 @@
         
         * {
             scroll-behavior: smooth;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
         }
         
         .glass-effect {
@@ -122,104 +82,174 @@
             backdrop-filter: blur(10px);
         }
         
-        .admin-sidebar {
-            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
-        }
-        
-        .sidebar-link {
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-link:hover, .sidebar-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
         }
         
         .notification-badge {
             animation: pulse 2s infinite;
         }
         
-        .chart-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar .sidebar-text {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+            
+            .sidebar:hover {
+                width: 256px;
+            }
+            
+            .sidebar:hover .sidebar-text {
+                display: inline;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .header-subtitle {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .chart-container {
+                padding: 1rem;
+            }
         }
     </style>
-</head>
-<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
-    <div class="flex">
+{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-gray-100 to-gray-200{% endblock %}
+
+{% block content %}
+    <!-- Mobile Sidebar Toggle -->
+    <button class="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-2 rounded-lg shadow-lg" id="mobileMenuToggle">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+    </button>
+
+    <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl">
+        <aside class="sidebar admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl bg-gradient-to-b from-primary to-green-800 transition-all duration-300">
             <div class="p-6">
                 <div class="flex items-center space-x-3 mb-8">
                     <div class="w-12 h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-xl">
                         🍽️
                     </div>
-                    <div>
+                    <div class="sidebar-text">
                         <h1 class="text-xl font-bold">BueaDelights</h1>
                         <p class="text-sm text-green-200">Admin Panel</p>
                     </div>
                 </div>
                 
                 <nav class="space-y-2">
-                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-lg bg-white/10">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"/>
                         </svg>
-                        <span>Dashboard</span>
+                        <span class="sidebar-text">Dashboard</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
-                        <span>Orders</span>
+                        <span class="sidebar-text">Orders</span>
                         {% if pending_orders > 0 %}
-                        <span class="notification-badge bg-accent text-white text-xs px-2 py-1 rounded-full">{{ pending_orders }}</span>
+                        <span class="notification-badge bg-accent text-white text-xs px-2 py-1 rounded-full ml-auto">{{ pending_orders }}</span>
                         {% endif %}
                     </a>
                     
-                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                         </svg>
-                        <span>Products</span>
+                        <span class="sidebar-text">Products</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
-                        <span>Categories</span>
+                        <span class="sidebar-text">Categories</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
-                        <span>Messages</span>
+                        <span class="sidebar-text">Messages</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
-                        <span>Catering</span>
+                        <span class="sidebar-text">Catering</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
-                        <span>Analytics</span>
+                        <span class="sidebar-text">Analytics</span>
                     </a>
                     
-                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        <span>Settings</span>
+                        <span class="sidebar-text">Settings</span>
                     </a>
                 </nav>
             </div>
@@ -227,43 +257,47 @@
             <div class="absolute bottom-6 left-6 right-6">
                 <div class="border-t border-white/20 pt-6">
                     <div class="flex items-center space-x-3 mb-4">
-                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                             A
                         </div>
-                        <div>
-                            <div class="font-semibold">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="sidebar-text min-w-0">
+                            <div class="font-semibold truncate">{{ user.get_full_name|default:user.username }}</div>
                             <div class="text-sm text-green-200">Administrator</div>
                         </div>
                     </div>
                     <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block">
-                        Logout
+                        <span class="sidebar-text">Logout</span>
+                        <span class="sidebar-icon hidden">🚪</span>
                     </a>
                 </div>
             </div>
         </aside>
         
+        <!-- Mobile Overlay -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden" id="mobileOverlay"></div>
+        
         <!-- Main Content -->
-        <main class="ml-64 flex-1 p-8">
+        <main class="main-content ml-64 flex-1 p-4 lg:p-8 transition-all duration-300">
             <!-- Header -->
             <header class="mb-8" data-aos="fade-down">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
                     <div>
-                        <h1 class="text-4xl font-display font-bold text-dark">
+                        <h1 class="header-title text-2xl lg:text-4xl font-display font-bold text-dark">
                             Welcome back, <span class="text-gradient">{{ user.get_full_name|default:user.username }}</span>
                         </h1>
-                        <p class="text-xl text-gray-600 mt-2">Here's what's happening with your restaurant today</p>
+                        <p class="header-subtitle text-lg lg:text-xl text-gray-600 mt-2">Here's what's happening with your restaurant today</p>
                     </div>
                     
-                    <div class="flex space-x-4">
-                        <a href="{% url 'backend:home' %}" class="btn-3d bg-secondary text-dark px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                        <a href="{% url 'backend:home' %}" class="btn-3d bg-secondary text-dark px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-all text-center">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                             View Site
                         </a>
-                        <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-all text-center">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
                             Add Product
@@ -273,62 +307,62 @@
             </header>
             
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
                 <!-- Total Orders -->
-                <div class="stat-card card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="100">
                     <div class="flex items-center justify-between">
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <p class="text-gray-600 text-sm font-medium">Total Orders</p>
-                            <p class="text-3xl font-bold text-dark">{{ total_orders|default:0 }}</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-dark truncate">{{ total_orders|default:0 }}</p>
                             <p class="text-sm text-green-600 font-medium">+12% from last month</p>
                         </div>
-                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl">
+                        <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl lg:text-2xl flex-shrink-0 ml-4">
                             📋
                         </div>
                     </div>
                 </div>
                 
                 <!-- Pending Orders -->
-                <div class="stat-card card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="200">
                     <div class="flex items-center justify-between">
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <p class="text-gray-600 text-sm font-medium">Pending Orders</p>
-                            <p class="text-3xl font-bold text-dark">{{ pending_orders|default:0 }}</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-dark truncate">{{ pending_orders|default:0 }}</p>
                             {% if pending_orders > 0 %}
                             <p class="text-sm text-accent font-medium">Needs attention</p>
                             {% else %}
                             <p class="text-sm text-green-600 font-medium">All caught up!</p>
                             {% endif %}
                         </div>
-                        <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white text-2xl">
+                        <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xl lg:text-2xl flex-shrink-0 ml-4">
                             ⏳
                         </div>
                     </div>
                 </div>
                 
                 <!-- Total Products -->
-                <div class="stat-card card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="300">
                     <div class="flex items-center justify-between">
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <p class="text-gray-600 text-sm font-medium">Total Products</p>
-                            <p class="text-3xl font-bold text-dark">{{ total_products|default:0 }}</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-dark truncate">{{ total_products|default:0 }}</p>
                             <p class="text-sm text-green-600 font-medium">Active in menu</p>
                         </div>
-                        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-2xl">
+                        <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xl lg:text-2xl flex-shrink-0 ml-4">
                             🍽️
                         </div>
                     </div>
                 </div>
                 
                 <!-- Total Revenue -->
-                <div class="stat-card card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-card card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="400">
                     <div class="flex items-center justify-between">
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
-                            <p class="text-3xl font-bold text-dark">{{ total_revenue|floatformat:0|default:0 }} FCFA</p>
+                            <p class="text-xl lg:text-3xl font-bold text-dark truncate">{{ total_revenue|floatformat:0|default:0 }} FCFA</p>
                             <p class="text-sm text-green-600 font-medium">+8% from last month</p>
                         </div>
-                        <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl">
+                        <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl lg:text-2xl flex-shrink-0 ml-4">
                             💰
                         </div>
                     </div>
@@ -336,43 +370,47 @@
             </div>
             
             <!-- Charts and Tables Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
                 <!-- Orders Chart -->
-                <div class="chart-container card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="500">
-                    <h3 class="text-xl font-bold text-dark mb-6">Orders Overview</h3>
-                    <canvas id="ordersChart" width="400" height="200"></canvas>
+                <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="500">
+                    <h3 class="text-lg lg:text-xl font-bold text-dark mb-4 lg:mb-6">Orders Overview</h3>
+                    <div class="relative h-64 lg:h-80">
+                        <canvas id="ordersChart" class="w-full h-full"></canvas>
+                    </div>
                 </div>
                 
                 <!-- Revenue Chart -->
-                <div class="chart-container card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="600">
-                    <h3 class="text-xl font-bold text-dark mb-6">Revenue Trend</h3>
-                    <canvas id="revenueChart" width="400" height="200"></canvas>
+                <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="600">
+                    <h3 class="text-lg lg:text-xl font-bold text-dark mb-4 lg:mb-6">Revenue Trend</h3>
+                    <div class="relative h-64 lg:h-80">
+                        <canvas id="revenueChart" class="w-full h-full"></canvas>
+                    </div>
                 </div>
             </div>
             
             <!-- Recent Orders and Low Stock -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
                 <!-- Recent Orders -->
-                <div class="chart-container card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="700">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-dark">Recent Orders</h3>
-                        <a href="{% url 'backend:admin_orders' %}" class="text-primary hover:text-green-700 font-semibold">View All →</a>
+                <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="700">
+                    <div class="flex justify-between items-center mb-4 lg:mb-6">
+                        <h3 class="text-lg lg:text-xl font-bold text-dark">Recent Orders</h3>
+                        <a href="{% url 'backend:admin_orders' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base">View All →</a>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-3 lg:space-y-4 max-h-80 overflow-y-auto">
                         {% for order in recent_orders %}
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                                <div class="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold flex-shrink-0">
                                     {{ order.customer_name|slice:":1"|upper }}
                                 </div>
-                                <div>
-                                    <div class="font-semibold text-dark">{{ order.customer_name }}</div>
-                                    <div class="text-sm text-gray-500">{{ order.created_at|timesince }} ago</div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-semibold text-dark text-sm lg:text-base truncate">{{ order.customer_name }}</div>
+                                    <div class="text-xs lg:text-sm text-gray-500">{{ order.created_at|timesince }} ago</div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-semibold text-dark">{{ order.total_amount|add:order.delivery_fee|floatformat:0 }} FCFA</div>
-                                <div class="text-sm
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <div class="font-semibold text-dark text-sm lg:text-base">{{ order.total_amount|add:order.delivery_fee|floatformat:0 }} FCFA</div>
+                                <div class="text-xs lg:text-sm
                                     {% if order.order_status == 'pending' %}text-yellow-600
                                     {% elif order.order_status == 'confirmed' %}text-blue-600
                                     {% elif order.order_status == 'delivered' %}text-green-600
@@ -382,41 +420,41 @@
                             </div>
                         </div>
                         {% empty %}
-                        <div class="text-center py-8 text-gray-500">
-                            <div class="text-4xl mb-2">📭</div>
-                            <p>No recent orders</p>
+                        <div class="text-center py-6 lg:py-8 text-gray-500">
+                            <div class="text-3xl lg:text-4xl mb-2">📭</div>
+                                                       <p class="text-sm lg:text-base">No recent orders found</p>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
                 
                 <!-- Low Stock Products -->
-                <div class="chart-container card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="800">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-dark">Low Stock Alert</h3>
-                        <a href="{% url 'backend:admin_products' %}" class="text-primary hover:text-green-700 font-semibold">Manage →</a>
+                <div class="chart-container card-3d rounded-2xl p-4 lg:p-6 shadow-xl" data-aos="fade-up" data-aos-delay="800">
+                    <div class="flex justify-between items-center mb-4 lg:mb-6">
+                        <h3 class="text-lg lg:text-xl font-bold text-dark">Low Stock Products</h3>
+                        <a href="{% url 'backend:admin_products' %}" class="text-primary hover:text-green-700 font-semibold text-sm lg:text-base">View All →</a>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-3 lg:space-y-4 max-h-80 overflow-y-auto">
                         {% for product in low_stock_products %}
-                        <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-xl">
-                                    🍽️
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-dark">{{ product.name }}</div>
-                                    <div class="text-sm text-gray-500">{{ product.category.name }}</div>
+                        <div class="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                                <div class="w-8 h-8 lg:w-10 lg:h-10 bg-cover bg-center rounded-lg flex-shrink-0" style="background-image: url('{{ product.image.url }}')"></div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-semibold text-dark text-sm lg:text-base truncate">{{ product.name }}</div>
+                                    <div class="text-xs lg:text-sm text-gray-500">{{ product.category }}</div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-semibold text-red-600">{{ product.stock_quantity }} left</div>
-                                <div class="text-sm text-gray-500">Restock needed</div>
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <div class="font-semibold text-dark text-sm lg:text-base">{{ product.price|floatformat:0 }} FCFA</div>
+                                <div class="text-xs lg:text-sm {% if product.stock_quantity < 5 %}text-accent{% else %}text-yellow-600{% endif %}">
+                                    {{ product.stock_quantity }} left
+                                </div>
                             </div>
                         </div>
                         {% empty %}
-                        <div class="text-center py-8 text-gray-500">
-                            <div class="text-4xl mb-2">✅</div>
-                            <p>All products well stocked</p>
+                        <div class="text-center py-6 lg:py-8 text-gray-500">
+                            <div class="text-3xl lg:text-4xl mb-2">📦</div>
+                            <p class="text-sm lg:text-base">All products are well stocked</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -424,115 +462,207 @@
             </div>
             
             <!-- Quick Actions -->
-            <div class="chart-container card-3d rounded-2xl p-6 shadow-xl" data-aos="fade-up" data-aos-delay="900">
-                <h3 class="text-xl font-bold text-dark mb-6">Quick Actions</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="{% url 'backend:admin_product_add' %}" class="btn-3d bg-primary text-white p-6 rounded-xl font-semibold hover:bg-green-700 transition-all text-center">
-                        <div class="text-3xl mb-2">➕</div>
-                        <div>Add Product</div>
+            <div class="mb-6 lg:mb-8" data-aos="fade-up" data-aos-delay="900">
+                <h3 class="text-lg lg:text-xl font-bold text-dark mb-4 lg:mb-6">Quick Actions</h3>
+                <div class="quick-actions-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 lg:mb-4">
+                            <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-dark text-sm lg:text-base mb-1 lg:mb-2">Create Order</h4>
+                        <p class="text-gray-600 text-xs lg:text-sm">Manually add a new customer order</p>
                     </a>
-                    <a href="{% url 'backend:admin_orders' %}?status=pending" class="btn-3d bg-yellow-500 text-white p-6 rounded-xl font-semibold hover:bg-yellow-600 transition-all text-center">
-                        <div class="text-3xl mb-2">📋</div>
-                        <div>View Pending</div>
+                    
+                    <a href="{% url 'backend:admin_product_add' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-3 lg:mb-4">
+                            <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-dark text-sm lg:text-base mb-1 lg:mb-2">Add Product</h4>
+                        <p class="text-gray-600 text-xs lg:text-sm">Add a new item to your menu</p>
                     </a>
-                    <a href="{% url 'backend:admin_messages' %}" class="btn-3d bg-blue-500 text-white p-6 rounded-xl font-semibold hover:bg-blue-600 transition-all text-center">
-                        <div class="text-3xl mb-2">💬</div>
-                        <div>Messages</div>
+                    
+                    <a href="#" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-3 lg:mb-4">
+                            <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-dark text-sm lg:text-base mb-1 lg:mb-2">Add Catering</h4>
+                        <p class="text-gray-600 text-xs lg:text-sm">Create a new catering event</p>
                     </a>
-                    <a href="{% url 'backend:admin_analytics' %}" class="btn-3d bg-purple-500 text-white p-6 rounded-xl font-semibold hover:bg-purple-600 transition-all text-center">
-                        <div class="text-3xl mb-2">📊</div>
-                        <div>Analytics</div>
+                    
+                    <a href="{% url 'backend:admin_analytics' %}" class="card-3d bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-all flex flex-col items-center text-center">
+                        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-3 lg:mb-4">
+                            <svg class="w-6 h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-dark text-sm lg:text-base mb-1 lg:mb-2">View Analytics</h4>
+                        <p class="text-gray-600 text-xs lg:text-sm">See detailed business insights</p>
                     </a>
                 </div>
             </div>
         </main>
     </div>
+{% endblock %}
 
-    <!-- Scripts -->
+{% block extra_js %}
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- AOS Animation Library -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <script>
-        // Initialize AOS
+        // Initialize AOS animation library
         AOS.init({
             duration: 800,
-            easing: 'ease-out-quad',
+            easing: 'ease-in-out',
             once: true
         });
-
-        // Orders Chart
-        const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-        new Chart(ordersCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Delivered', 'Pending', 'Preparing', 'Cancelled'],
-                datasets: [{
-                    data: [
-                        {{ total_orders|default:0 }} - {{ pending_orders|default:0 }},
-                        {{ pending_orders|default:0 }},
-                        Math.floor({{ total_orders|default:0 }} * 0.1),
-                        Math.floor({{ total_orders|default:0 }} * 0.05)
-                    ],
-                    backgroundColor: [
-                        '#22c55e',
-                        '#f59e0b',
-                        '#3b82f6',
-                        '#ef4444'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
+        
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (mobileMenuToggle && mobileOverlay && sidebar) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-open');
+                    mobileOverlay.classList.toggle('hidden');
+                });
+                
+                mobileOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('mobile-open');
+                    mobileOverlay.classList.add('hidden');
+                });
             }
-        });
-
-        // Revenue Chart
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Revenue (FCFA)',
-                    data: [120000, 190000, 300000, 500000, 200000, {{ total_revenue|default:0 }}],
-                    borderColor: '#228B22',
-                    backgroundColor: 'rgba(34, 139, 34, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString() + ' FCFA';
+            
+            // Initialize charts
+            const ordersCtx = document.getElementById('ordersChart');
+            const revenueCtx = document.getElementById('revenueChart');
+            
+            if (ordersCtx) {
+                new Chart(ordersCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        datasets: [{
+                            label: 'Orders',
+                            data: [12, 19, 15, 22, 18, 25, 30],
+                            backgroundColor: 'rgba(34, 139, 34, 0.2)',
+                            borderColor: 'rgba(34, 139, 34, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
                             }
                         }
                     }
-                }
+                });
             }
-        });
+            
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        datasets: [{
+                            label: 'Revenue (FCFA)',
+                            data: [250000, 320000, 280000, 350000, 400000, 450000, 500000],
+                            backgroundColor: 'rgba(220, 20, 60, 0.7)',
+                            borderColor: 'rgba(220, 20, 60, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y.toLocaleString() + ' FCFA';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString() + ' FCFA';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // PWA Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(
+                        function(registration) {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        },
+                        function(err) {
+                            console.log('ServiceWorker registration failed: ', err);
+                        }
+                    );
+                });
+            }
 
-        // Real-time updates (simulated)
-        setInterval(() => {
-            // Update counters or fetch new data
-            console.log('Checking for updates...');
-        }, 30000);
+            // Register service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+            console.log('SW registered:', registration);
+            
+            // Handle updates
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // Show update available notification
+                        showUpdateNotification();
+                    }
+                });
+            });
+        })
+        .catch(error => console.log('SW registration failed:', error));
+}
+
+// Enable background sync for offline actions
+function scheduleBackgroundSync(tag) {
+    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+        navigator.serviceWorker.ready.then(registration => {
+            return registration.sync.register(tag);
+        });
+    }
+}
+        });
     </script>
-</body>
-</html>
+{% endblock %}

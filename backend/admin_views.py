@@ -328,70 +328,84 @@ class AdminCateringListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return context
 
 # Admin Analytics View
-class AdminAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+# views.py or admin_views.py
+from django.views.generic import TemplateView
+from django.utils import timezone
+from django.db.models import Sum, Count
+from datetime import timedelta
+from .models import Order, OrderItem, Product, Category
+
+class AdminAnalyticsView(TemplateView):
     template_name = 'admin/analytics.html'
-    login_url = 'backend:admin_login'
-    
-    def test_func(self):
-        return self.request.user.is_superuser
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Date range for analytics
+        # Get date range from query parameters (default to 30 days)
+        date_range = int(self.request.GET.get('range', 30))
         end_date = timezone.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days=date_range)
         
-        # Order statistics
-        orders_stats = Order.objects.filter(created_at__range=[start_date, end_date])
-        context['total_orders'] = orders_stats.count()
-        context['completed_orders'] = orders_stats.filter(order_status='delivered').count()
-        context['pending_orders'] = orders_stats.filter(order_status='pending').count()
+        # Filter orders by date range
+        orders = Order.objects.filter(created_at__range=[start_date, end_date])
         
-        # Revenue statistics
-        completed_orders = orders_stats.filter(payment_status='completed')
-        context['total_revenue'] = completed_orders.aggregate(
-            total=Sum('total_amount')
-        )['total'] or 0
-        context['average_order_value'] = completed_orders.aggregate(
-            avg=Avg('total_amount')
-        )['avg'] or 0
+        # Calculate metrics
+        total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+        total_orders = orders.count()
+        avg_order_value = total_revenue / total_orders if total_orders > 0 else 0
         
-        # Product statistics
-        context['total_products'] = Product.objects.count()
-        context['available_products'] = Product.objects.filter(is_available=True).count()
-        context['featured_products'] = Product.objects.filter(is_featured=True).count()
-        context['low_stock_products'] = Product.objects.filter(stock_quantity__lt=5).count()
+        # Revenue data by day
+        revenue_data = orders.values('created_at__date').annotate(
+            revenue=Sum('total_amount')
+        ).order_by('created_at__date')
         
-        # Customer statistics
-        context['total_customers'] = Order.objects.values('customer_email').distinct().count()
-        context['repeat_customers'] = Order.objects.values('customer_email').annotate(
-            order_count=Count('id')
-        ).filter(order_count__gt=1).count()
+        # Orders data by day
+        orders_data = orders.values('created_at__date').annotate(
+            orders=Count('id')
+        ).order_by('created_at__date')
         
-        # Popular products
-        context['popular_products'] = OrderItem.objects.values(
+        # Product performance
+        product_performance = OrderItem.objects.filter(
+            order__in=orders
+        ).values(
             'product__name'
         ).annotate(
-            total_quantity=Sum('quantity')
-        ).order_by('-total_quantity')[:5]
+            total_sold=Sum('quantity'),
+            total_revenue=Sum('total_price')
+        ).order_by('-total_revenue')[:10]
         
-        # Daily orders for the last 7 days
-        daily_orders = []
-        for i in range(7):
-            date = end_date - timedelta(days=i)
-            count = Order.objects.filter(
-                created_at__date=date.date()
-            ).count()
-            daily_orders.append({
-                'date': date.strftime('%Y-%m-%d'),
-                'orders': count
-            })
-        context['daily_orders'] = list(reversed(daily_orders))
+        # Customer insights
+        customer_insights = orders.values(
+            'customer_phone'
+        ).annotate(
+            order_count=Count('id'),
+            total_spent=Sum('total_amount')
+        ).order_by('-total_spent')[:10]
         
-        # Messages and inquiries
-        context['unread_messages'] = ContactMessage.objects.filter(is_read=False).count()
-        context['new_catering_inquiries'] = CateringInquiry.objects.filter(status='new').count()
+        # Category performance
+        category_performance = OrderItem.objects.filter(
+            order__in=orders
+        ).values(
+            'product__category__name'
+        ).annotate(
+            total_sold=Sum('quantity'),
+            total_revenue=Sum('total_price')
+        ).order_by('-total_revenue')
+        
+        # Add all data to context
+        context.update({
+            'date_range': date_range,
+            'start_date': start_date,
+            'end_date': end_date,
+            'total_revenue': total_revenue,
+            'total_orders': total_orders,
+            'avg_order_value': avg_order_value,
+            'revenue_data': list(revenue_data),
+            'orders_data': list(orders_data),
+            'product_performance': product_performance,
+            'customer_insights': customer_insights,
+            'category_performance': category_performance,
+        })
         
         return context
 

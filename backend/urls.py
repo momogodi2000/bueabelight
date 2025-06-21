@@ -63,4 +63,9 @@ urlpatterns = [
     
     path('admin-panel/analytics/', views.AdminAnalyticsView.as_view(), name='admin_analytics'),
     path('admin-panel/settings/', views.AdminSettingsView.as_view(), name='admin_settings'),
+
+
+
+    #path('admin/api/csrf-token/', views.csrf_token_view, name='csrf_token'),
+    #path('admin/offline/', views.offline_view, name='admin_offline')
 ]

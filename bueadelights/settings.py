@@ -189,3 +189,11 @@ if DEBUG:
     import socket
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+
+
+
+# PWA Settings
+PWA_APP_NAME = 'BueaDelights Admin'
+PWA_APP_DESCRIPTION = 'Professional restaurant management system'
+PWA_APP_THEME_COLOR = '#228B22'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'

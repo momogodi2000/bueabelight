@@ -279,6 +279,7 @@ class CheckoutView(TemplateView):
         context['form'] = CheckoutForm()
         return context
     
+   # In views.py, modify the CheckoutView post method
     def post(self, request, *args, **kwargs):
         form = CheckoutForm(request.POST)
         cart = request.session.get('cart', {})
@@ -319,11 +320,13 @@ class CheckoutView(TemplateView):
             
             # Handle payment method
             if order.payment_method == 'whatsapp_contact':
-                # Redirect to WhatsApp
-                return redirect('backend:whatsapp_order') + f'?order_id={order.order_id}'
+                # Redirect to WhatsApp with order ID as parameter
+                whatsapp_url = reverse('backend:whatsapp_order') + f'?order_id={order.order_id}'
+                return redirect(whatsapp_url)
             elif order.payment_method == 'mobile_money':
-                # Process Noupia payment
-                return redirect('backend:noupia_payment') + f'?order_id={order.order_id}'
+                # Process Noupia payment with order ID as parameter
+                noupia_url = reverse('backend:noupia_payment') + f'?order_id={order.order_id}'
+                return redirect(noupia_url)
             else:
                 # Cash on delivery
                 order.payment_status = 'pending'
@@ -493,6 +496,8 @@ class ContactView(TemplateView):
         context['form'] = form
         return render(request, self.template_name, context)
 
+# In your views.py, make sure the CateringView looks like this:
+
 class CateringView(TemplateView):
     template_name = 'backend/catering.html'
     
@@ -504,9 +509,17 @@ class CateringView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = CateringInquiryForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Your catering inquiry has been submitted!')
-            return redirect('backend:catering')
+            try:
+                form.save()
+                messages.success(request, 'Your catering inquiry has been submitted! We will contact you shortly.')
+                return redirect('backend:catering')
+            except Exception as e:
+                messages.error(request, f'An error occurred: {str(e)}')
+        else:
+            # Pass form errors back to template
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
         
         context = self.get_context_data(**kwargs)
         context['form'] = form

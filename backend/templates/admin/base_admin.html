@@ -1,321 +1,477 @@
-<!-- backend/templates/admin/base_admin.html -->
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Admin Dashboard - BueaDelights{% endblock %}</title>
+    <meta name="description" content="{% block description %}BueaDelights Admin Dashboard - Manage orders, products, and business operations{% endblock %}">
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#228B22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BueaDelights Admin">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BueaDelights Admin">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon-16x16.png' %}">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style">
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
     
     <!-- Tailwind CSS -->
-    {% load static %}
-    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{% static 'backend/images/favicon.png' %}">
+    <!-- Chart.js -->
+    {% block extra_head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    {% endblock %}
     
-    <!-- Additional CSS -->
-    {% block extra_css %}{% endblock %}
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#228B22',
+                        'secondary': '#FFD700',
+                        'accent': '#DC143C',
+                        'dark': '#1a1a1a',
+                        'glass': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        'display': ['Georgia', 'serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-right': 'slideRight 0.8s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    },
+                    screens: {
+                        'xs': '475px'
+                    }
+                }
+            }
+        }
+    </script>
     
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Critical CSS -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #228B22;
+            --secondary: #FFD700;
+            --accent: #DC143C;
+            --dark: #1a1a1a;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        .text-gradient {
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
+            backdrop-filter: blur(10px);
+        }
+        
         .admin-sidebar {
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(34, 139, 34, 0.9) 100%);
         }
         
-        .admin-sidebar.hidden {
-            transform: translateX(-100%);
+        .sidebar-link {
+            transition: all 0.3s ease;
         }
         
-        .nav-item {
-            @apply flex items-center px-4 py-3 text-gray-700 hover:bg-forest-green hover:text-white transition-colors duration-200 rounded-lg mx-2 mb-1;
-        }
-        
-        .nav-item.active {
-            @apply bg-forest-green text-white;
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
         }
         
         .notification-badge {
-            @apply bg-warm-red text-white text-xs rounded-full px-2 py-1 ml-auto;
+            animation: pulse 2s infinite;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Mobile Sidebar */
+        .mobile-sidebar-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
+        
+        .mobile-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: none;
+            }
+            
+            .btn-3d:hover {
+                transform: none;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+            
+            .floating-element {
+                animation: none;
+            }
+        }
+        
+        /* PWA specific styles */
+        @media (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1a7a1a;
         }
     </style>
+    
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 font-inter">
-    <div class="flex h-screen overflow-hidden">
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-3 rounded-lg shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+    </button>
+    
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-overlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden mobile-sidebar-overlay"></div>
+    
+    <div class="flex">
         <!-- Sidebar -->
-        <aside id="sidebar" class="admin-sidebar w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-            <!-- Logo Section -->
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <img src="{% static 'backend/images/logo.png' %}" alt="BueaDelights" class="h-10 w-auto">
+        <aside id="sidebar" class="admin-sidebar w-64 min-h-screen fixed left-0 top-0 z-40 text-white shadow-2xl mobile-sidebar lg:transform-none">
+            <div class="p-4 lg:p-6">
+                <!-- Mobile Close Button -->
+                <button id="mobile-close-btn" class="lg:hidden absolute top-4 right-4 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                
+                <div class="flex items-center space-x-3 mb-6 lg:mb-8">
+                    <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-secondary to-white rounded-full flex items-center justify-center text-primary font-bold text-lg lg:text-xl">
+                        🍽️
+                    </div>
                     <div>
-                        <h2 class="font-playfair font-bold text-xl text-forest-green">BueaDelights</h2>
-                        <p class="text-xs text-gray-600">Admin Panel</p>
+                        <h1 class="text-lg lg:text-xl font-bold">BueaDelights</h1>
+                        <p class="text-xs lg:text-sm text-green-200">Admin Panel</p>
                     </div>
                 </div>
+                
+                <nav class="space-y-1 lg:space-y-2">
+                    <a href="{% url 'backend:admin_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4m8-4v4"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_orders' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Orders</span>
+                        {% if pending_orders > 0 %}
+                        <span class="notification-badge bg-accent text-white text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-full">{{ pending_orders }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_products' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_products' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span>Products</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_categories' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_categories' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span>Categories</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_messages' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_messages' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Messages</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_catering' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_catering' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Catering</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_analytics' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>Analytics</span>
+                    </a>
+                    
+                    <a href="{% url 'backend:admin_settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %} flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-sm lg:text-base">
+                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Settings</span>
+                    </a>
+                </nav>
             </div>
             
-            <!-- Navigation Menu -->
-            <nav class="p-4">
-                <!-- Dashboard -->
-                <a href="{% url 'backend:admin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                    </svg>
-                    Dashboard
-                </a>
-                
-                <!-- Orders -->
-                <a href="{% url 'backend:admin_orders' %}" class="nav-item {% if 'orders' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Orders
-                    {% if pending_orders > 0 %}
-                    <span class="notification-badge">{{ pending_orders }}</span>
-                    {% endif %}
-                </a>
-                
-                <!-- Products -->
-                <div class="mb-2">
-                    <a href="{% url 'backend:admin_products' %}" class="nav-item {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 2L3 7v11a2 2 0 002 2h10a2 2 0 002-2V7l-7-5zM8 15V9h4v6H8z" clip-rule="evenodd"/>
-                        </svg>
-                        Products
+            <div class="absolute bottom-4 lg:bottom-6 left-4 lg:left-6 right-4 lg:right-6">
+                <div class="border-t border-white/20 pt-4 lg:pt-6">
+                    <div class="flex items-center space-x-2 lg:space-x-3 mb-3 lg:mb-4">
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm lg:text-base">
+                            A
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-semibold text-sm lg:text-base truncate">{{ user.get_full_name|default:user.username }}</div>
+                            <div class="text-xs lg:text-sm text-green-200">Administrator</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'backend:admin_logout' %}" class="btn-3d w-full bg-accent text-white px-3 lg:px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all text-center block text-sm lg:text-base">
+                        Logout
                     </a>
                 </div>
-                
-                <!-- Categories -->
-                <a href="{% url 'backend:admin_categories' %}" class="nav-item {% if 'categories' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 7v10a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"/>
-                        <path d="M9 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9V5z"/>
-                    </svg>
-                    Categories
-                </a>
-                
-                <!-- Messages -->
-                <a href="{% url 'backend:admin_messages' %}" class="nav-item {% if 'message' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                    </svg>
-                    Messages
-                    {% if unread_messages > 0 %}
-                    <span class="notification-badge">{{ unread_messages }}</span>
-                    {% endif %}
-                </a>
-                
-                <!-- Analytics -->
-                <a href="{% url 'backend:admin_analytics' %}" class="nav-item {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                    </svg>
-                    Analytics
-                </a>
-                
-                <!-- Email Marketing -->
-                <a href="{% url 'backend:admin_bulk_email' %}" class="nav-item {% if 'email' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                    </svg>
-                    Email Marketing
-                </a>
-                
-                <!-- Divider -->
-                <hr class="my-4 border-gray-200">
-                
-                <!-- Settings -->
-                <a href="{% url 'backend:admin_settings' %}" class="nav-item {% if 'settings' in request.resolver_match.url_name %}active{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-                    </svg>
-                    Settings
-                </a>
-                
-                <!-- Back to Site -->
-                <a href="{% url 'backend:home' %}" target="_blank" class="nav-item">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/>
-                    </svg>
-                    View Site
-                </a>
-                
-                <!-- Logout -->
-                <a href="{% url 'admin:logout' %}" class="nav-item text-warm-red hover:bg-warm-red hover:text-white">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
-                    </svg>
-                    Logout
-                </a>
-            </nav>
+            </div>
         </aside>
         
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Top Header -->
-            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <!-- Mobile Menu Toggle -->
-                        <button id="mobile-menu-toggle" class="lg:hidden p-2 rounded-md hover:bg-gray-100">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                            </svg>
-                        </button>
-                        
-                        <!-- Page Title -->
-                        <div>
-                            <h1 class="text-2xl font-semibold text-gray-800">{% block page_title %}Dashboard{% endblock %}</h1>
-                            {% block breadcrumb %}{% endblock %}
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        <!-- Quick Stats -->
-                        <div class="hidden sm:flex items-center space-x-4 text-sm">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                                <span class="text-gray-600">Orders: {{ today_orders|default:0 }}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <span class="text-gray-600">Revenue: {{ today_revenue|default:0|floatformat:0 }} FCFA</span>
-                            </div>
-                        </div>
-                        
-                        <!-- User Menu -->
-                        <div class="relative">
-                            <button id="user-menu-toggle" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-                                <div class="w-8 h-8 bg-forest-green text-white rounded-full flex items-center justify-center">
-                                    <span class="text-sm font-medium">{{ user.first_name.0|default:user.username.0|upper }}</span>
-                                </div>
-                                <div class="hidden sm:block text-left">
-                                    <p class="text-sm font-medium text-gray-800">{{ user.first_name|default:user.username }}</p>
-                                    <p class="text-xs text-gray-600">Administrator</p>
-                                </div>
-                                <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
-                            
-                            <!-- User Dropdown -->
-                            <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <div class="py-2">
-                                    <a href="{% url 'admin:auth_user_change' user.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <svg class="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 8a3 3 0 00-3 3v3a1 1 0 001 1h4a1 1 0 001-1v-3a3 3 0 00-3-3z"/>
-                                        </svg>
-                                        Profile Settings
-                                    </a>
-                                    <a href="{% url 'backend:admin_settings' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <svg class="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-                                        </svg>
-                                        Business Settings
-                                    </a>
-                                    <hr class="my-2 border-gray-200">
-                                    <a href="{% url 'admin:logout' %}" class="block px-4 py-2 text-sm text-warm-red hover:bg-red-50">
-                                        <svg class="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
-                                        </svg>
-                                        Logout
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Main Content -->
-            <main class="flex-1 overflow-auto p-6">
-                <!-- Messages -->
-                {% if messages %}
-                <div class="mb-6 space-y-4">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} p-4 rounded-lg border flex items-center justify-between
-                        {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
-                        {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
-                        {% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-200 text-yellow-800
-                        {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
-                        <div class="flex items-center">
-                            {% if message.tags == 'success' %}
-                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            {% elif message.tags == 'error' %}
-                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            {% elif message.tags == 'warning' %}
-                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            {% else %}
-                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                            </svg>
-                            {% endif %}
-                            <span>{{ message }}</span>
-                        </div>
-                        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-700">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Page Content -->
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+        <!-- Main Content -->
+        <main class="lg:ml-64 flex-1 p-4 lg:p-8 pt-16 lg:pt-8">
+            {% block content %}
+            {% endblock %}
+        </main>
     </div>
-    
-    <!-- JavaScript -->
-    <script src="{% static 'backend/js/main.js' %}"></script>
-    {% block extra_js %}{% endblock %}
-    
+
+    <!-- Base Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-    // Mobile sidebar toggle
-    document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('hidden');
-    });
-    
-    // User menu toggle
-    document.getElementById('user-menu-toggle').addEventListener('click', function() {
-        const menu = document.getElementById('user-menu');
-        menu.classList.toggle('hidden');
-    });
-    
-    // Close user menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const toggle = document.getElementById('user-menu-toggle');
-        const menu = document.getElementById('user-menu');
-        
-        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
-    });
-    
-    // Auto-hide messages after 5 seconds
-    setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-            alert.style.opacity = '0';
-            setTimeout(function() {
-                alert.remove();
-            }, 300);
+        // Initialize AOS with mobile-friendly settings
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-quad',
+            once: true,
+            disable: window.innerWidth < 768 ? true : false
         });
-    }, 5000);
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const sidebar = document.getElementById('sidebar');
+        const mobileCloseBtn = document.getElementById('mobile-close-btn');
+
+        function openSidebar() {
+            mobileOverlay.classList.remove('hidden');
+            sidebar.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            mobileOverlay.classList.add('hidden');
+            sidebar.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        mobileMenuBtn.addEventListener('click', openSidebar);
+        mobileOverlay.addEventListener('click', closeSidebar);
+        mobileCloseBtn.addEventListener('click', closeSidebar);
+
+        // Auto-close sidebar on mobile when navigating
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // PWA Installation
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install banner (you can customize this)
+            const installBanner = document.createElement('div');
+            installBanner.innerHTML = `
+                <div class="fixed bottom-4 right-4 bg-primary text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                    <p class="text-sm mb-2">Install BueaDelights Admin for better experience!</p>
+                    <div class="flex space-x-2">
+                        <button id="install-btn" class="bg-white text-primary px-3 py-1 rounded text-sm">Install</button>
+                        <button id="dismiss-btn" class="bg-transparent border border-white px-3 py-1 rounded text-sm">Later</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(installBanner);
+            
+            document.getElementById('install-btn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    installBanner.remove();
+                }
+            });
+            
+            document.getElementById('dismiss-btn').addEventListener('click', () => {
+                installBanner.remove();
+            });
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (installBanner.parentNode) {
+                    installBanner.remove();
+                }
+            }, 10000);
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Network status indicator
+        function updateNetworkStatus() {
+            const isOnline = navigator.onLine;
+            const statusIndicator = document.getElementById('network-status');
+            
+            if (!statusIndicator) {
+                const indicator = document.createElement('div');
+                indicator.id = 'network-status';
+                indicator.className = 'fixed top-4 right-4 px-3 py-1 rounded-full text-sm font-medium z-50 transition-all';
+                document.body.appendChild(indicator);
+            }
+            
+            const indicator = document.getElementById('network-status');
+            
+            if (isOnline) {
+                indicator.className = 'fixed top-4 right-4 px-3 py-1 rounded-full text-sm font-medium z-50 transition-all bg-green-500 text-white';
+                indicator.textContent = 'Online';
+                setTimeout(() => {
+                    indicator.style.opacity = '0';
+                }, 2000);
+            } else {
+                indicator.className = 'fixed top-4 right-4 px-3 py-1 rounded-full text-sm font-medium z-50 transition-all bg-red-500 text-white';
+                indicator.textContent = 'Offline';
+                indicator.style.opacity = '1';
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // Performance optimization: Defer non-critical scripts
+        window.addEventListener('load', () => {
+            // Load non-critical features after page load
+            console.log('Page loaded - initializing additional features');
+        });
     </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
