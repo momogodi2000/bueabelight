@@ -308,3 +308,35 @@ class NoupiaTransactionAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return False  # Don't allow deletion of transaction records
+
+
+
+
+
+from django.contrib import admin
+
+# Register your models here when they're ready
+try:
+    from .models import Category, Product, BusinessSettings
+    
+    @admin.register(Category)
+    class CategoryAdmin(admin.ModelAdmin):
+        list_display = ['name', 'is_active', 'created_at']
+        prepopulated_fields = {'slug': ('name',)}
+        list_filter = ['is_active', 'created_at']
+        search_fields = ['name', 'description']
+
+    @admin.register(Product)
+    class ProductAdmin(admin.ModelAdmin):
+        list_display = ['name', 'category', 'price', 'is_available', 'is_featured', 'stock_quantity']
+        prepopulated_fields = {'slug': ('name',)}
+        list_filter = ['category', 'is_available', 'is_featured', 'created_at']
+        search_fields = ['name', 'description']
+
+    @admin.register(BusinessSettings)
+    class BusinessSettingsAdmin(admin.ModelAdmin):
+        list_display = ['business_name', 'phone', 'email', 'is_accepting_orders']
+        
+except ImportError:
+    # Models not available yet, skip admin registration
+    pass
