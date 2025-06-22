@@ -1,4 +1,4 @@
-# FIXED RENDER.YAML - BueaDelights Deployment Configuration
+# SIMPLE RENDER.YAML - BueaDelights Deployment Configuration
 services:
   - type: web
     name: bueadelights
@@ -36,8 +36,6 @@ services:
         value: "yvangodimomo@gmail.com"
       - key: EMAIL_HOST_PASSWORD
         value: "pzls apph esje cgdl"
-      - key: PORT
-        value: "10000"
 
 databases:
   - name: bueadelights-db

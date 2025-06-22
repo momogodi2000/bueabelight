@@ -1,5 +1,5 @@
 """
-FIXED Django settings for BueaDelights project - Robust database handling
+FIXED Django settings for BueaDelights project
 """
 
 import os
@@ -16,7 +16,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-xu8s84x48n2dl#eaw9k*3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-# ALLOWED_HOSTS configuration with better parsing
+# ALLOWED_HOSTS configuration
 allowed_hosts_env = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,bueadelights.onrender.com,.onrender.com')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
@@ -78,53 +78,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bueadelights.wsgi.application'
 
-# ROBUST DATABASE CONFIGURATION
+# DATABASE CONFIGURATION - SIMPLIFIED AND ROBUST
 DATABASE_URL = config('DATABASE_URL', default=None)
 
-print(f"🔍 DATABASE_URL found: {bool(DATABASE_URL)}")
+print(f"🔍 DATABASE_URL provided: {bool(DATABASE_URL)}")
 
-# Check for valid database URL
-valid_database_url = DATABASE_URL and 'postgresql://' in DATABASE_URL
-
-if valid_database_url:
-    try:
-        # Production database (PostgreSQL on Render)
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-        print("🗃️ Using PostgreSQL Database")
-        
-        # Test the database configuration
-        import psycopg2
-        print("✅ psycopg2 available for PostgreSQL")
-        
-    except ImportError:
-        print("⚠️ psycopg2 not available, falling back to SQLite")
-        valid_database_url = False
-    except Exception as e:
-        print(f"⚠️ Database URL parsing error: {e}, falling back to SQLite")
-        valid_database_url = False
-
-if not valid_database_url:
-    # Fallback to SQLite (always works)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-    print("🗃️ Using SQLite Database (fallback)")
-
-
-# ... existing imports ...
-
-# Database configuration with fallback
+# Check if we're on Render (production)
 if 'RENDER' in os.environ:
-    # Render PostgreSQL database
+    # Production database (PostgreSQL on Render)
     DATABASES = {
         'default': dj_database_url.config(
             default=os.environ.get('DATABASE_URL'),
@@ -134,16 +95,14 @@ if 'RENDER' in os.environ:
     }
     print("🗃️ Using Render PostgreSQL Database")
 else:
-    # Local SQLite database
+    # Development database (SQLite)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    print("🗃️ Using SQLite Database (local development)")
-
-# ... rest of your settings ...
+    print("🗃️ Using SQLite Database (development)")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -167,7 +126,7 @@ TIME_ZONE = 'Africa/Douala'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images) - PRODUCTION READY
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -178,19 +137,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# Only include backend static if it exists
-backend_static = BASE_DIR / 'backend' / 'static'
-if backend_static.exists():
-    STATICFILES_DIRS.append(backend_static)
-
-# Static files storage - robust configuration
+# Static files storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# WhiteNoise configuration - very tolerant
+# WhiteNoise configuration
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'ico']
-WHITENOISE_MAX_AGE = 31536000  # 1 year
 
 # Media files
 MEDIA_URL = '/media/'
@@ -206,7 +159,7 @@ BUSINESS_NAME = config('BUSINESS_NAME', default='BueaDelights')
 BUSINESS_EMAIL = config('BUSINESS_EMAIL', default='info@bueadelights.com')
 DELIVERY_FEE = config('DELIVERY_FEE', default=1500, cast=int)
 
-# Email Configuration - robust with fallbacks
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
@@ -219,10 +172,6 @@ if not EMAIL_HOST_USER and DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     print("📧 Using console email backend for development")
 
-# Payment Configuration
-NOUPIA_API_KEY = config('NOUPIA_API_KEY', default='')
-NOUPIA_MERCHANT_ID = config('NOUPIA_MERCHANT_ID', default='')
-
 # Session Configuration
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_SAVE_EVERY_REQUEST = True
@@ -232,15 +181,11 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     'https://bueadelights.onrender.com',
-    'https://www.bueadelights.com',
-    'https://bueadelights.com'
 ] if not DEBUG else []
 
 # CSRF Configuration
 CSRF_TRUSTED_ORIGINS = [
     'https://bueadelights.onrender.com',
-    'https://www.bueadelights.com',
-    'https://bueadelights.com',
     'http://localhost:8000',
     'http://127.0.0.1:8000'
 ]
@@ -248,13 +193,6 @@ CSRF_TRUSTED_ORIGINS = [
 # Production-specific settings
 if not DEBUG:
     print("🚀 PRODUCTION MODE ENABLED")
-    
-    # Security settings - conservative but functional
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_SSL_REDIRECT = False  # Keep False until SSL is confirmed working
-    SESSION_COOKIE_SECURE = False  # Keep False until SSL is confirmed working
-    CSRF_COOKIE_SECURE = False  # Keep False until SSL is confirmed working
     
     # Optimized logging for production
     LOGGING = {
@@ -277,40 +215,9 @@ if not DEBUG:
             'handlers': ['console'],
             'level': 'WARNING',
         },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'WARNING',
-                'propagate': False,
-            },
-            'django.db.backends': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-                'propagate': False,
-            },
-        },
     }
-    
-    # Cache configuration for production
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
-        }
-    }
-    
 else:
     print("🔧 DEVELOPMENT MODE ENABLED")
-    
-    # Development-specific settings
-    INTERNAL_IPS = [
-        '127.0.0.1',
-        'localhost',
-    ]
-
-# File upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 
 print("✅ Django settings loaded successfully")
 print(f"📁 Static root: {STATIC_ROOT}")
