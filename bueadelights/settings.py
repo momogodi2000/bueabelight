@@ -119,6 +119,32 @@ if not valid_database_url:
     }
     print("🗃️ Using SQLite Database (fallback)")
 
+
+# ... existing imports ...
+
+# Database configuration with fallback
+if 'RENDER' in os.environ:
+    # Render PostgreSQL database
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+    print("🗃️ Using Render PostgreSQL Database")
+else:
+    # Local SQLite database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    print("🗃️ Using SQLite Database (local development)")
+
+# ... rest of your settings ...
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {

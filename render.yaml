@@ -1,4 +1,4 @@
-# FIXED RENDER.YAML - BueaDelights Deployment Configuration
+# OPTION 1: With PostgreSQL Database (recommended for production)
 services:
   - type: web
     name: bueadelights
@@ -6,7 +6,7 @@ services:
     plan: free
     buildCommand: "./build.sh"
     startCommand: "gunicorn bueadelights.wsgi:application --bind 0.0.0.0:$PORT"
-    healthCheckPath: /health/
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
