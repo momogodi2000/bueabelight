@@ -79,23 +79,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bueadelights.wsgi.application'
 
 # DATABASE CONFIGURATION - SIMPLIFIED AND ROBUST
+# DATABASE CONFIGURATION - SINGLE, CLEAN VERSION
 DATABASE_URL = config('DATABASE_URL', default=None)
 
-print(f"🔍 DATABASE_URL provided: {bool(DATABASE_URL)}")
+print(f"🔍 DATABASE_URL found: {bool(DATABASE_URL)}")
 
-# Check if we're on Render (production)
-if 'RENDER' in os.environ:
-    # Production database (PostgreSQL on Render)
+if DATABASE_URL:
+    # Parse the DATABASE_URL (production)
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
+            default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
         )
     }
-    print("🗃️ Using Render PostgreSQL Database")
+    print(f"🗃️ Using Database: {DATABASES['default']['ENGINE']}")
 else:
-    # Development database (SQLite)
+    # SQLite fallback (development)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

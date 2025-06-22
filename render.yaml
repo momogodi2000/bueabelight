@@ -1,4 +1,4 @@
-# SIMPLE RENDER.YAML - BueaDelights Deployment Configuration
+# FIXED RENDER.YAML - BueaDelights Deployment Configuration
 services:
   - type: web
     name: bueadelights
@@ -18,6 +18,10 @@ services:
         value: False
       - key: ALLOWED_HOSTS
         value: "bueadelights.onrender.com,.onrender.com,localhost,127.0.0.1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bueadelights-db
+          property: connectionString
       - key: WHATSAPP_NUMBER
         value: "+237699808260"
       - key: BUSINESS_NAME
