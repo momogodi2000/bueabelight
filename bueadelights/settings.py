@@ -15,10 +15,8 @@ import dj_database_url
 from pathlib import Path
 from decouple import config
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -34,16 +32,12 @@ allowed_hosts_env = config('ALLOWED_HOSTS', default='localhost,127.0.0.1')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
 # Make sure we always include these essential hosts
-if 'localhost' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('localhost')
-if '127.0.0.1' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('127.0.0.1')
+essential_hosts = ['localhost', '127.0.0.1', 'bueadelights.onrender.com', '.onrender.com']
+for host in essential_hosts:
+    if host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
-# Add Render.com domain if not present
-if 'bueadelights.onrender.com' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('bueadelights.onrender.com')
-if '.onrender.com' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('.onrender.com')
+print(f"🌐 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # Application definition
 DJANGO_APPS = [
@@ -82,7 +76,10 @@ ROOT_URLCONF = 'bueadelights.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'backend' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,17 +87,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'backend.context_processors.business_context',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'bueadelights.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Database configuration - Fixed for Render PostgreSQL
 DATABASE_URL = config('DATABASE_URL', default=None)
@@ -114,21 +106,18 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
-    print(f"🗃️  Using PostgreSQL Database: {DATABASE_URL[:50]}...")
+    print(f"🗃️  Using PostgreSQL Database")
 else:
     # Development database (SQLite)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'momo.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
     print("🗃️  Using SQLite Database for development")
 
-
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -153,12 +142,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Ensure staticfiles directory exists
+os.makedirs(STATIC_ROOT, exist_ok=True)
+
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# Static files storage for production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Static files storage
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# WhiteNoise configuration
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
 
 # Media files
 MEDIA_URL = '/media/'
@@ -206,8 +204,11 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000'
 ]
 
-# Security Settings for Production
+# Production-specific settings
 if not DEBUG:
+    print("🚀 Running in PRODUCTION mode")
+    
+    # Security Settings for Production
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -215,27 +216,52 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False  # Set to True when you have SSL
     SESSION_COOKIE_SECURE = False  # Set to True when you have SSL
     CSRF_COOKIE_SECURE = False  # Set to True when you have SSL
-
-# Auto-reload for development
-if DEBUG:
+    SECURE_REFERRER_POLICY = 'same-origin'
+    
+    # Logging configuration for production
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'bueadelights': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
+else:
+    print("🔧 Running in DEVELOPMENT mode")
+    
+    # Development settings
     import socket
     try:
         hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
         INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
     except:
         INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
-
-# PWA Settings
-PWA_APP_NAME = 'BueaDelights Admin'
-PWA_APP_DESCRIPTION = 'Professional restaurant management system'
-PWA_APP_THEME_COLOR = '#228B22'
-PWA_APP_BACKGROUND_COLOR = '#ffffff'
-
-# Print debug info
-if DEBUG:
-    print(f"🔧 Django Settings Loaded")
-    print(f"🌐 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
-    print(f"🗃️  DATABASE: {'PostgreSQL' if config('DATABASE_URL', default=None) else 'SQLite'}")
-    print(f"📧 EMAIL_HOST_USER: {EMAIL_HOST_USER}")
-else:
-    print("🚀 Production settings loaded")

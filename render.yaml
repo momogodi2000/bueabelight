@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: "./build.sh"
-    startCommand: "gunicorn bueadelights.wsgi:application"
+    startCommand: "gunicorn bueadelights.wsgi:application --bind 0.0.0.0:$PORT"
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
@@ -31,6 +31,10 @@ services:
         value: "587"
       - key: EMAIL_USE_TLS
         value: "True"
+      - key: EMAIL_HOST_USER
+        value: "yvangodimomo@gmail.com"
+      - key: EMAIL_HOST_PASSWORD
+        value: "pzls apph esje cgdl"
       - key: PORT
         value: "10000"
 
