@@ -7,6 +7,19 @@
 
 A comprehensive Django-based e-commerce web application for a local Cameroonian food business in Buea, Southwest Region. The platform serves authentic Cameroonian cuisine with modern web technologies, mobile-first design, and integrated payment solutions.
 
+BueaDelights est une application web vitrine conçue pour permettre à un jeune entrepreneur camerounais basé à Buea de présenter, promouvoir et vendre ses produits alimentaires locaux. L'application est optimisée pour le contexte camerounais, en tenant compte des contraintes locales comme la bande passante, les méthodes de paiement disponibles et les habitudes de consommation.
+
+BueaDelights Logo
+
+📋 Fonctionnalités
+Vitrine des produits : Présentation attrayante des produits alimentaires locaux
+Catalogue de produits : Classés par catégories avec photos, descriptions et prix
+Système de commande : Panier d'achat intuitif et processus simplifié
+Réservations : Possibilité de réserver des produits à l'avance
+Paiements locaux : Intégration avec Mobile Money et Orange Money
+Espace client : Création de compte, historique des commandes, programme de fidélité
+Administration : Interface simplifiée pour gérer les produits, commandes et clients
+
 ## 🌟 Features
 
 ### 🍴 Customer Features
