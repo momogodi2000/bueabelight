@@ -1,3 +1,4 @@
+# OPTION 1: With PostgreSQL Database (recommended for production)
 services:
   - type: web
     name: bueadelights
@@ -40,6 +41,47 @@ services:
 
 databases:
   - name: bueadelights-db
-    plan: free
     databaseName: bueadelights
     user: bueadelights_user
+    plan: free
+
+# OPTION 2: Without Database (uncomment this and comment out the above if database issues persist)
+# services:
+#   - type: web
+#     name: bueadelights
+#     env: python
+#     plan: free
+#     buildCommand: "./build.sh"
+#     startCommand: "gunicorn bueadelights.wsgi:application --bind 0.0.0.0:$PORT"
+#     healthCheckPath: /
+#     envVars:
+#       - key: PYTHON_VERSION
+#         value: 3.13.4
+#       - key: DJANGO_SETTINGS_MODULE
+#         value: bueadelights.settings
+#       - key: SECRET_KEY
+#         generateValue: true
+#       - key: DEBUG
+#         value: False
+#       - key: ALLOWED_HOSTS
+#         value: "bueadelights.onrender.com,.onrender.com,localhost,127.0.0.1"
+#       - key: WHATSAPP_NUMBER
+#         value: "+237699808260"
+#       - key: BUSINESS_NAME
+#         value: "BueaDelights"
+#       - key: BUSINESS_EMAIL
+#         value: "info@bueadelights.com"
+#       - key: DELIVERY_FEE
+#         value: "1500"
+#       - key: EMAIL_HOST
+#         value: "smtp.gmail.com"
+#       - key: EMAIL_PORT
+#         value: "587"
+#       - key: EMAIL_USE_TLS
+#         value: "True"
+#       - key: EMAIL_HOST_USER
+#         value: "yvangodimomo@gmail.com"
+#       - key: EMAIL_HOST_PASSWORD
+#         value: "pzls apph esje cgdl"
+#       - key: PORT
+#         value: "10000"
