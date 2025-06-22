@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# FIXED BUILD SCRIPT - Only fixes migration issues
+# FINAL BUILD SCRIPT FIX - Forces PostgreSQL migrations
 set -o errexit
 
 echo "🚀 STARTING BUEADELIGHTS DEPLOYMENT..."
@@ -10,253 +10,126 @@ echo "📦 Installing Python dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Create ALL necessary directories (from your original script)
-echo "📁 Creating directory structure..."
-directories=(
-    "staticfiles"
-    "staticfiles/css"
-    "staticfiles/js" 
-    "staticfiles/images"
-    "staticfiles/admin"
-    "media"
-    "media/uploads"
-    "logs"
-    "static/css"
-    "static/js"
-    "static/images"
-    "static/admin"
-    "backend/static/backend/css"
-    "backend/static/backend/js"
-    "backend/static/backend/images"
-    "backend/templates/backend"
-    "backend/migrations"
-    "templates"
-)
-
-for dir in "${directories[@]}"; do
-    mkdir -p "$dir"
-    echo "✅ Created: $dir"
-done
+# Create directories
+echo "📁 Creating directories..."
+mkdir -p staticfiles media static/css static/js static/images backend/migrations
 
 # Ensure migrations directory is properly initialized
-echo "🔧 Initializing migrations..."
 touch backend/__init__.py
 touch backend/migrations/__init__.py
 
-# Create basic CSS file (your original)
-echo "🎨 Creating CSS files..."
+# Create basic CSS
+echo "🎨 Creating CSS..."
 cat > static/css/style.css << 'EOF'
-/* BueaDelights Base Styles */
-:root {
-    --primary-color: #228B22;
-    --primary-hover: #1e7a1e;
-    --secondary-color: #32CD32;
-    --text-dark: #333;
-    --text-light: #666;
-    --bg-light: #f8f9fa;
-    --white: #ffffff;
-    --shadow: 0 2px 10px rgba(0,0,0,0.1);
-    --border-radius: 8px;
-    --transition: all 0.3s ease;
-}
-
+/* BueaDelights Styles */
+:root { --primary-color: #228B22; --secondary-color: #32CD32; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    line-height: 1.6;
-    color: var(--text-dark);
-    background-color: var(--bg-light);
-}
-
+body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-
-.header { 
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
-    color: var(--white); 
-    padding: 40px 20px; 
-    text-align: center; 
-    box-shadow: var(--shadow);
-}
-
-.header h1 { 
-    font-size: clamp(2rem, 5vw, 4rem);
-    margin-bottom: 15px; 
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    font-weight: 700;
-}
-
-.btn { 
-    background: var(--primary-color); 
-    color: var(--white); 
-    padding: 15px 30px; 
-    border: none; 
-    border-radius: var(--border-radius); 
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    font-weight: 600;
-    transition: var(--transition);
-    box-shadow: var(--shadow);
-}
-
-.btn:hover { 
-    background: var(--primary-hover); 
-    transform: translateY(-2px);
-}
-
-.welcome-message {
-    text-align: center;
-    padding: 60px 40px;
-    background: var(--white);
-    margin: 30px 0;
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-}
-
-.welcome-message h1 {
-    color: var(--primary-color);
-    font-size: clamp(2rem, 4vw, 3rem);
-    margin-bottom: 25px;
-    font-weight: 700;
-}
-
-.status {
-    background: #d4edda;
-    color: #155724;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    margin: 25px 0;
-    border-left: 5px solid #28a745;
-}
-
-.status.error {
-    background: #f8d7da;
-    color: #721c24;
-    border-left-color: #dc3545;
-}
-
-@media (max-width: 768px) {
-    .container { padding: 0 15px; }
-    .welcome-message { padding: 40px 20px; margin: 20px 0; }
-    .btn { padding: 12px 24px; font-size: 0.9rem; }
-}
+.btn { background: var(--primary-color); color: white; padding: 15px 30px; border: none; border-radius: 8px; }
 EOF
 
-# Copy CSS to all required locations
-cp static/css/style.css staticfiles/css/style.css 2>/dev/null || true
-mkdir -p backend/static/backend/css
-cp static/css/style.css backend/static/backend/css/style.css 2>/dev/null || true
+# Copy CSS to staticfiles
+cp static/css/style.css staticfiles/ 2>/dev/null || true
 
-# Create placeholder images (your original)
-echo "🖼️ Creating placeholder images..."
-python3 -c "
-import base64
-from pathlib import Path
-
-# Simple 1x1 transparent PNG
-png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAHH/wEqFAAAAABJRU5ErkJggg==')
-
-# ICO file for favicon
-ico_data = base64.b64decode('AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==')
-
-# Create icons in multiple locations
-icon_locations = ['static/images', 'staticfiles/images', 'backend/static/backend/images']
-
-for location in icon_locations:
-    Path(location).mkdir(parents=True, exist_ok=True)
-    
-    # Create favicon
-    with open(Path(location) / 'favicon.ico', 'wb') as f:
-        f.write(ico_data)
-    
-    # Create PNG images
-    for filename in ['favicon.png', 'logo.png', 'default.png']:
-        with open(Path(location) / filename, 'wb') as f:
-            f.write(png_data)
-
-print('✅ Placeholder images created')
+# DEBUG: Check database configuration
+echo "🔍 Checking database configuration..."
+python -c "
+import os
+from decouple import config
+print(f'DATABASE_URL exists: {bool(config(\"DATABASE_URL\", default=None))}')
+print(f'RENDER env var: {bool(os.environ.get(\"RENDER\"))}')
+print(f'DATABASE_URL preview: {config(\"DATABASE_URL\", default=\"Not set\")[:50]}...')
 "
 
-# CRITICAL FIX: Force database connection and run migrations properly
-echo "🔍 Testing Django configuration..."
+# CRITICAL: Test Django setup and database connection
+echo "🔧 Testing Django setup..."
 python -c "
 import os
 import django
 from django.conf import settings
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+django.setup()
 
+print(f'✅ Django settings loaded')
+print(f'✅ Database engine: {settings.DATABASES[\"default\"][\"ENGINE\"]}')
+print(f'✅ Database name: {settings.DATABASES[\"default\"].get(\"NAME\", \"N/A\")}')
+
+# Test database connection
+from django.db import connection
 try:
-    django.setup()
-    print('✅ Django setup successful')
-    print(f'✅ Database: {settings.DATABASES[\"default\"][\"ENGINE\"]}')
-    print(f'✅ Debug mode: {settings.DEBUG}')
-    
-    # Test basic imports
-    from backend.models import Category, Product
-    print('✅ Models imported successfully')
-    
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT version()')
+        result = cursor.fetchone()
+        print(f'✅ Database connected: {result[0][:50]}...')
 except Exception as e:
-    print(f'❌ Django setup error: {e}')
-    exit(1)
+    print(f'❌ Database connection failed: {e}')
+    raise
 "
 
-# THE REAL FIX: Force migrations to run with proper error handling
-echo "📊 Running database migrations..."
+# FORCE migrations to run
+echo "📊 Running database migrations (FORCED)..."
+python manage.py makemigrations backend --verbosity=2
+python manage.py migrate --verbosity=2
 
-# First, ensure Django can connect to database
-python -c "
-from django.db import connection
-print('Testing database connection...')
-cursor = connection.cursor()
-cursor.execute('SELECT 1')
-print('✅ Database connection successful')
-"
-
-# Run migrations with force
-echo "🔨 Applying migrations..."
-python manage.py migrate --run-syncdb --verbosity=2
-
-# Verify tables were created
-echo "🔍 Verifying database tables..."
+# Verify tables were created in PostgreSQL
+echo "🔍 Verifying PostgreSQL tables..."
 python -c "
 from django.db import connection
 cursor = connection.cursor()
 
-# Check if backend_category table exists
-try:
-    cursor.execute('SELECT COUNT(*) FROM backend_category')
-    print('✅ backend_category table exists')
-except:
-    print('❌ backend_category table does not exist')
-    exit(1)
+# List all tables
+cursor.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'\")
+tables = cursor.fetchall()
+print(f'✅ Found {len(tables)} tables in PostgreSQL')
 
-try:
-    cursor.execute('SELECT COUNT(*) FROM backend_product')
-    print('✅ backend_product table exists')
-except:
-    print('❌ backend_product table does not exist')
-
-try:
-    cursor.execute('SELECT COUNT(*) FROM backend_businesssettings')
-    print('✅ backend_businesssettings table exists')
-except:
-    print('❌ backend_businesssettings table does not exist')
+# Check specific tables
+required_tables = ['backend_category', 'backend_product', 'backend_businesssettings']
+for table in required_tables:
+    try:
+        cursor.execute(f'SELECT COUNT(*) FROM {table}')
+        count = cursor.fetchone()[0]
+        print(f'✅ {table}: {count} records')
+    except Exception as e:
+        print(f'❌ {table}: ERROR - {e}')
+        exit(1)
 "
 
-# Create superuser accounts (your original code)
-echo "👤 Creating superuser accounts..."
-python manage.py create_superadmins || {
-    echo "⚠️ Manual superuser creation..."
-    python -c "
+# Create sample data
+echo "🍽️ Creating sample data..."
+python -c "
 import os
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
 django.setup()
 
+from backend.models import Category, BusinessSettings
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
+# Create business settings
+settings, created = BusinessSettings.objects.get_or_create(
+    pk=1,
+    defaults={
+        'business_name': 'BueaDelights',
+        'business_description': 'Local Flavors at Your Fingertips',
+        'phone': '+237699808260',
+        'email': 'info@bueadelights.com'
+    }
+)
+print(f'✅ Business settings: {\"created\" if created else \"exists\"}')
+
+# Create categories
+categories = ['Traditional Dishes', 'Local Snacks', 'Beverages', 'Pastries & Sweets']
+for cat_name in categories:
+    cat, created = Category.objects.get_or_create(
+        name=cat_name,
+        defaults={'slug': slugify(cat_name), 'is_active': True}
+    )
+    print(f'✅ Category {cat_name}: {\"created\" if created else \"exists\"}')
+
+# Create admin users
 admins = [
     ('folefack_caroline', 'folefacvivianekokoko@gmail.com', '@caroline2025'),
     ('momo_godi_yvan', 'yvangodimomo@gmail.com', '@momoyvan65'),
@@ -272,66 +145,33 @@ for username, email, password in admins:
             print(f'✅ Superuser {username} already exists')
     except Exception as e:
         print(f'⚠️ Error creating {username}: {e}')
+
+print('✅ Sample data creation completed')
 "
-}
-
-# Create sample data (your original code)
-echo "🍽️ Creating sample data..."
-python manage.py create_sample_data || {
-    echo "⚠️ Manual sample data creation..."
-    python -c "
-import os
-import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
-django.setup()
-
-from backend.models import Category, BusinessSettings
-from django.utils.text import slugify
-
-try:
-    # Create business settings
-    settings, created = BusinessSettings.objects.get_or_create(
-        pk=1,
-        defaults={
-            'business_name': 'BueaDelights',
-            'business_description': 'Local Flavors at Your Fingertips',
-            'phone': '+237699808260',
-            'email': 'info@bueadelights.com'
-        }
-    )
-    print(f'✅ Business settings: {\"created\" if created else \"exists\"}')
-    
-    # Create basic categories
-    categories = ['Traditional Dishes', 'Local Snacks', 'Beverages', 'Pastries & Sweets']
-    for cat_name in categories:
-        cat, created = Category.objects.get_or_create(
-            name=cat_name,
-            defaults={'slug': slugify(cat_name), 'is_active': True}
-        )
-        print(f'✅ Category {cat_name}: {\"created\" if created else \"exists\"}')
-        
-except Exception as e:
-    print(f'⚠️ Sample data error: {e}')
-"
-}
 
 # Collect static files
 echo "📄 Collecting static files..."
-python manage.py collectstatic --no-input --clear --verbosity=2 || echo "⚠️ Static collection completed with warnings"
+python manage.py collectstatic --no-input --verbosity=1
 
-# Final verification
+# Final verification that everything works
 echo "🔍 Final verification..."
 python -c "
 from django.db import connection
-from backend.models import Category
+from backend.models import Category, BusinessSettings
 
+# Test database and models
 try:
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT 1')
+    cat_count = Category.objects.count()
+    bs_count = BusinessSettings.objects.count()
     
-    # Test model access
-    count = Category.objects.count()
-    print(f'✅ Database verification successful - {count} categories found')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT version()')
+        db_version = cursor.fetchone()[0]
+    
+    print(f'✅ Final verification successful:')
+    print(f'   - Database: PostgreSQL ({db_version[:30]}...)')
+    print(f'   - Categories: {cat_count}')
+    print(f'   - Business Settings: {bs_count}')
     
 except Exception as e:
     print(f'❌ Final verification failed: {e}')
@@ -345,18 +185,13 @@ echo "📅 Completed at: $(date)"
 echo ""
 echo "✅ DEPLOYMENT SUMMARY:"
 echo "   📦 Dependencies: Installed"
-echo "   📁 Directories: Created"
-echo "   🎨 Static Files: Generated"
-echo "   📊 Database: Migrated & Verified"
+echo "   🗃️ Database: PostgreSQL Connected & Migrated"
+echo "   📊 Tables: Created & Verified"
 echo "   👤 Admin Users: Created"
 echo "   🍽️ Sample Data: Loaded"
+echo "   📄 Static Files: Collected"
 echo ""
 echo "🌐 APPLICATION READY!"
 echo "   🔗 Site: https://bueadelights.onrender.com"
 echo "   🔐 Admin: https://bueadelights.onrender.com/admin/"
-echo ""
-echo "👤 ADMIN CREDENTIALS:"
-echo "   folefack_caroline : @caroline2025"
-echo "   momo_godi_yvan : @momoyvan65"
-echo "   admin : BueaDelights2025!"
 echo ""
