@@ -1,4 +1,4 @@
-# FIXED RENDER.YAML - BueaDelights Deployment Configuration
+# Render.yaml - Manual PostgreSQL Configuration
 services:
   - type: web
     name: bueadelights
@@ -8,20 +8,27 @@ services:
     startCommand: "gunicorn bueadelights.wsgi:application --bind 0.0.0.0:$PORT"
     healthCheckPath: /health/
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.13.4
+      # Django Configuration
       - key: DJANGO_SETTINGS_MODULE
-        value: bueadelights.settings
+        value: bueadelights.settings_production
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: False
-      - key: ALLOWED_HOSTS
-        value: "bueadelights.onrender.com,.onrender.com,localhost,127.0.0.1"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: bueadelights-db
-          property: connectionString
+      
+      # Database Configuration (REPLACE WITH YOUR ACTUAL VALUES)
+      - key: DB_NAME
+        value: bueadelights
+      - key: DB_USER
+        value: bueadelights_user
+      - key: DB_PASSWORD
+        value: WmungBtE75hnhXvhPwNvVchuNkPUK2Nb
+      - key: DB_HOST
+        value: dpg-d1cife95pdvs73et5t10-a
+      - key: DB_PORT
+        value: 5432
+      
+      # Business Configuration
       - key: WHATSAPP_NUMBER
         value: "+237699808260"
       - key: BUSINESS_NAME
@@ -30,6 +37,8 @@ services:
         value: "info@bueadelights.com"
       - key: DELIVERY_FEE
         value: "1500"
+      
+      # Email Configuration
       - key: EMAIL_HOST
         value: "smtp.gmail.com"
       - key: EMAIL_PORT
@@ -40,9 +49,3 @@ services:
         value: "yvangodimomo@gmail.com"
       - key: EMAIL_HOST_PASSWORD
         value: "pzls apph esje cgdl"
-
-databases:
-  - name: bueadelights-db
-    databaseName: bueadelights
-    user: bueadelights_user
-    plan: free

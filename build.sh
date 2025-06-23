@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# FINAL BUILD SCRIPT FIX - Forces PostgreSQL migrations
+# BUILD SCRIPT - Manual PostgreSQL Configuration
 set -o errexit
 
 echo "🚀 STARTING BUEADELIGHTS DEPLOYMENT..."
@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 # Create directories
 echo "📁 Creating directories..."
-mkdir -p staticfiles media static/css static/js static/images backend/migrations
+mkdir -p staticfiles media static/css backend/migrations
 
 # Ensure migrations directory is properly initialized
 touch backend/__init__.py
@@ -27,70 +27,78 @@ cat > static/css/style.css << 'EOF'
 body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 .btn { background: var(--primary-color); color: white; padding: 15px 30px; border: none; border-radius: 8px; }
+.welcome-message { text-align: center; padding: 60px 40px; background: white; margin: 30px 0; border-radius: 15px; }
 EOF
 
 # Copy CSS to staticfiles
 cp static/css/style.css staticfiles/ 2>/dev/null || true
 
-# DEBUG: Check database configuration
-echo "🔍 Checking database configuration..."
-python -c "
-import os
-from decouple import config
-print(f'DATABASE_URL exists: {bool(config(\"DATABASE_URL\", default=None))}')
-print(f'RENDER env var: {bool(os.environ.get(\"RENDER\"))}')
-print(f'DATABASE_URL preview: {config(\"DATABASE_URL\", default=\"Not set\")[:50]}...')
-"
+# Show database configuration being used
+echo "🔍 Database Configuration:"
+echo "   Host: $DB_HOST"
+echo "   Database: $DB_NAME"
+echo "   User: $DB_USER"
+echo "   Port: $DB_PORT"
 
-# CRITICAL: Test Django setup and database connection
+# Test Django setup with production settings
 echo "🔧 Testing Django setup..."
 python -c "
 import os
 import django
 from django.conf import settings
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings_production')
 django.setup()
 
-print(f'✅ Django settings loaded')
+print(f'✅ Django settings loaded: {settings.SETTINGS_MODULE}')
 print(f'✅ Database engine: {settings.DATABASES[\"default\"][\"ENGINE\"]}')
-print(f'✅ Database name: {settings.DATABASES[\"default\"].get(\"NAME\", \"N/A\")}')
+print(f'✅ Database host: {settings.DATABASES[\"default\"][\"HOST\"]}')
+print(f'✅ Database name: {settings.DATABASES[\"default\"][\"NAME\"]}')
+"
 
 # Test database connection
+echo "🔌 Testing database connection..."
+python -c "
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings_production')
+django.setup()
+
 from django.db import connection
 try:
     with connection.cursor() as cursor:
         cursor.execute('SELECT version()')
         result = cursor.fetchone()
-        print(f'✅ Database connected: {result[0][:50]}...')
+        print(f'✅ Database connected successfully!')
+        print(f'✅ PostgreSQL version: {result[0][:50]}...')
 except Exception as e:
     print(f'❌ Database connection failed: {e}')
-    raise
+    exit(1)
 "
 
-# FORCE migrations to run
-echo "📊 Running database migrations (FORCED)..."
+# Run migrations
+echo "📊 Running database migrations..."
 python manage.py makemigrations backend --verbosity=2
 python manage.py migrate --verbosity=2
 
-# Verify tables were created in PostgreSQL
-echo "🔍 Verifying PostgreSQL tables..."
+# Verify tables were created
+echo "🔍 Verifying tables..."
 python -c "
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings_production')
+django.setup()
+
 from django.db import connection
 cursor = connection.cursor()
 
-# List all tables
-cursor.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'\")
-tables = cursor.fetchall()
-print(f'✅ Found {len(tables)} tables in PostgreSQL')
-
-# Check specific tables
-required_tables = ['backend_category', 'backend_product', 'backend_businesssettings']
-for table in required_tables:
+# Check if our tables exist
+tables_to_check = ['backend_category', 'backend_product', 'backend_businesssettings', 'backend_order']
+for table in tables_to_check:
     try:
         cursor.execute(f'SELECT COUNT(*) FROM {table}')
         count = cursor.fetchone()[0]
-        print(f'✅ {table}: {count} records')
+        print(f'✅ {table}: exists ({count} records)')
     except Exception as e:
         print(f'❌ {table}: ERROR - {e}')
         exit(1)
@@ -101,7 +109,7 @@ echo "🍽️ Creating sample data..."
 python -c "
 import os
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings_production')
 django.setup()
 
 from backend.models import Category, BusinessSettings
@@ -153,23 +161,21 @@ print('✅ Sample data creation completed')
 echo "📄 Collecting static files..."
 python manage.py collectstatic --no-input --verbosity=1
 
-# Final verification that everything works
+# Final verification
 echo "🔍 Final verification..."
 python -c "
-from django.db import connection
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bueadelights.settings_production')
+django.setup()
+
 from backend.models import Category, BusinessSettings
 
-# Test database and models
 try:
     cat_count = Category.objects.count()
     bs_count = BusinessSettings.objects.count()
     
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT version()')
-        db_version = cursor.fetchone()[0]
-    
     print(f'✅ Final verification successful:')
-    print(f'   - Database: PostgreSQL ({db_version[:30]}...)')
     print(f'   - Categories: {cat_count}')
     print(f'   - Business Settings: {bs_count}')
     
@@ -192,6 +198,4 @@ echo "   🍽️ Sample Data: Loaded"
 echo "   📄 Static Files: Collected"
 echo ""
 echo "🌐 APPLICATION READY!"
-echo "   🔗 Site: https://bueadelights.onrender.com"
-echo "   🔐 Admin: https://bueadelights.onrender.com/admin/"
 echo ""
