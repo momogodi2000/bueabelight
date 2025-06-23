@@ -1,11 +1,17 @@
 """
 Production settings for BueaDelights - PostgreSQL Configuration
 """
-# Add this to the very TOP of your settings_production.py file
+# Add these lines to the VERY TOP of settings_production.py
 
-print("🎯 PRODUCTION SETTINGS LOADED!")
-print("🎯 PRODUCTION SETTINGS LOADED!")
-print("🎯 PRODUCTION SETTINGS LOADED!")
+print("🚨🚨🚨 PRODUCTION SETTINGS LOADING! 🚨🚨🚨")
+print("🚨🚨🚨 PRODUCTION SETTINGS LOADING! 🚨🚨🚨")
+print("🚨🚨🚨 PRODUCTION SETTINGS LOADING! 🚨🚨🚨")
+
+import os
+print(f"🔍 Environment check:")
+print(f"   DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}")
+print(f"   DB_HOST: {os.environ.get('DB_HOST', 'NOT SET')}")
+print(f"   DEBUG: {os.environ.get('DEBUG', 'NOT SET')}")
 
 # ... rest of your settings_production.py file stays the same ...
 
