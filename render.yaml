@@ -24,7 +24,7 @@ services:
       - key: DB_PASSWORD
         value: WmungBtE75hnhXvhPwNvVchuNkPUK2Nb
       - key: DB_HOST
-        value: dpg-d1cife95pdvs73et5t10-a
+        value: dpg-d1cife95pdvs73et5t10-a.oregon-postgres.render.com
       - key: DB_PORT
         value: 5432
       
