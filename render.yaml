@@ -1,14 +1,14 @@
-# Render.yaml - Manual PostgreSQL Configuration
+# render.yaml - FORCE BUILD TO RUN
 services:
   - type: web
     name: bueadelights
     env: python
     plan: free
-    buildCommand: "./build.sh"
+    buildCommand: "chmod +x build.sh && ./build.sh"
     startCommand: "gunicorn bueadelights.wsgi:application --bind 0.0.0.0:$PORT"
     healthCheckPath: /health/
     envVars:
-      # Django Configuration
+      # Django Configuration - FORCE PRODUCTION SETTINGS
       - key: DJANGO_SETTINGS_MODULE
         value: bueadelights.settings_production
       - key: SECRET_KEY
@@ -16,7 +16,7 @@ services:
       - key: DEBUG
         value: False
       
-      # Database Configuration (REPLACE WITH YOUR ACTUAL VALUES)
+      # Database Configuration - YOUR VALUES
       - key: DB_NAME
         value: bueadelights
       - key: DB_USER

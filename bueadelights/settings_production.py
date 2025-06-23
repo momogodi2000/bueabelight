@@ -1,6 +1,13 @@
 """
 Production settings for BueaDelights - PostgreSQL Configuration
 """
+# Add this to the very TOP of your settings_production.py file
+
+print("🎯 PRODUCTION SETTINGS LOADED!")
+print("🎯 PRODUCTION SETTINGS LOADED!")
+print("🎯 PRODUCTION SETTINGS LOADED!")
+
+# ... rest of your settings_production.py file stays the same ...
 
 import os
 from pathlib import Path
